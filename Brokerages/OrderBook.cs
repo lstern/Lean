@@ -27,7 +27,6 @@ namespace QuantConnect.Brokerages
     public class OrderBook
     {
         private readonly object _locker = new object();
-        private readonly Symbol _symbol;
         private readonly SortedDictionary<decimal, decimal> _bids = new SortedDictionary<decimal, decimal>();
         private readonly SortedDictionary<decimal, decimal> _asks = new SortedDictionary<decimal, decimal>();
 
@@ -35,6 +34,11 @@ namespace QuantConnect.Brokerages
         /// Event fired each time <see cref="BestBidPrice"/> or <see cref="BestAskPrice"/> are changed
         /// </summary>
         public event EventHandler<BestBidAskUpdatedEventArgs> BestBidAskUpdated;
+
+        /// <summary>
+        /// Order book symbol
+        /// </summary>
+        public Symbol Symbol { get; private set; }
 
         /// <summary>
         /// The best bid price
@@ -62,13 +66,13 @@ namespace QuantConnect.Brokerages
         /// <param name="symbol">The symbol for the order book</param>
         public OrderBook(Symbol symbol)
         {
-            _symbol = symbol;
+            Symbol = symbol;
         }
 
         /// <summary>
         /// Clears all bid/ask levels and prices.
         /// </summary>
-        public void Clear()
+        public virtual void Clear()
         {
             lock (_locker)
             {
@@ -89,7 +93,7 @@ namespace QuantConnect.Brokerages
         /// <param name="size">The new size at the bid price level</param>
         public void UpdateBidRow(decimal price, decimal size)
         {
-            lock(_locker)
+            lock (_locker)
             {
                 _bids[price] = size;
             }
@@ -99,7 +103,7 @@ namespace QuantConnect.Brokerages
                 BestBidPrice = price;
                 BestBidSize = size;
 
-                BestBidAskUpdated?.Invoke(this, new BestBidAskUpdatedEventArgs(_symbol, BestBidPrice, BestBidSize, BestAskPrice, BestAskSize));
+                BestBidAskUpdated?.Invoke(this, new BestBidAskUpdatedEventArgs(Symbol, BestBidPrice, BestBidSize, BestAskPrice, BestAskSize));
             }
         }
 
@@ -110,7 +114,7 @@ namespace QuantConnect.Brokerages
         /// <param name="size">The new size at the ask price level</param>
         public void UpdateAskRow(decimal price, decimal size)
         {
-            lock(_locker)
+            lock (_locker)
             {
                 _asks[price] = size;
             }
@@ -120,7 +124,7 @@ namespace QuantConnect.Brokerages
                 BestAskPrice = price;
                 BestAskSize = size;
 
-                BestBidAskUpdated?.Invoke(this, new BestBidAskUpdatedEventArgs(_symbol, BestBidPrice, BestBidSize, BestAskPrice, BestAskSize));
+                BestBidAskUpdated?.Invoke(this, new BestBidAskUpdatedEventArgs(Symbol, BestBidPrice, BestBidSize, BestAskPrice, BestAskSize));
             }
         }
 
@@ -130,20 +134,20 @@ namespace QuantConnect.Brokerages
         /// <param name="price">The bid price level to be removed</param>
         public void RemoveBidRow(decimal price)
         {
-            lock(_locker)
+            lock (_locker)
             {
                 _bids.Remove(price);
             }
 
             if (price == BestBidPrice)
             {
-                lock(_locker)
+                lock (_locker)
                 {
                     BestBidPrice = _bids.Keys.LastOrDefault();
                     BestBidSize = BestBidPrice > 0 ? _bids[BestBidPrice] : 0;
                 }
 
-                BestBidAskUpdated?.Invoke(this, new BestBidAskUpdatedEventArgs(_symbol, BestBidPrice, BestBidSize, BestAskPrice, BestAskSize));
+                BestBidAskUpdated?.Invoke(this, new BestBidAskUpdatedEventArgs(Symbol, BestBidPrice, BestBidSize, BestAskPrice, BestAskSize));
             }
         }
 
@@ -153,20 +157,20 @@ namespace QuantConnect.Brokerages
         /// <param name="price">The ask price level to be removed</param>
         public void RemoveAskRow(decimal price)
         {
-            lock(_locker)
+            lock (_locker)
             {
                 _asks.Remove(price);
             }
 
             if (price == BestAskPrice)
             {
-                lock(_locker)
+                lock (_locker)
                 {
                     BestAskPrice = _asks.Keys.FirstOrDefault();
                     BestAskSize = BestAskPrice > 0 ? _asks[BestAskPrice] : 0;
                 }
 
-                BestBidAskUpdated?.Invoke(this, new BestBidAskUpdatedEventArgs(_symbol, BestBidPrice, BestBidSize, BestAskPrice, BestAskSize));
+                BestBidAskUpdated?.Invoke(this, new BestBidAskUpdatedEventArgs(Symbol, BestBidPrice, BestBidSize, BestAskPrice, BestAskSize));
             }
         }
     }
