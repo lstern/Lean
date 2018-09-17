@@ -33,7 +33,7 @@ namespace QuantConnect.Brokerages
         /// <param name="url"></param>
         public void Initialize(string url)
         {
-            if (_wrapped != null)
+            if (IsOpen)
             {
                 throw new InvalidOperationException("WebSocketWrapper has already been initialized for: " + _url);
             }
@@ -55,7 +55,7 @@ namespace QuantConnect.Brokerages
         /// <param name="data"></param>
         public void Send(string data)
         {
-            _wrapped.Send(data);
+            _wrapped?.Send(data);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace QuantConnect.Brokerages
         /// </summary>
         public void Connect()
         {
-            if (!IsOpen)
+            if (!IsOpen && _wrapped != null)
             {
                 _wrapped.Connect();
             }
@@ -72,15 +72,12 @@ namespace QuantConnect.Brokerages
         /// <summary>
         /// Wraps Close method
         /// </summary>
-        public void Close()
-        {
-            _wrapped.Close();
-        }
+        public void Close() => _wrapped?.Close();
 
         /// <summary>
         /// Wraps IsAlive
         /// </summary>
-        public bool IsOpen => _wrapped.IsAlive;
+        public bool IsOpen => _wrapped?.IsAlive == true;
 
         /// <summary>
         /// Wraps message event
