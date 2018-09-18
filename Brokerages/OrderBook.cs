@@ -17,7 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QuantConnect.Brokerages.GDAX
+namespace QuantConnect.Brokerages
 {
     /// <summary>
     /// Represents a full order book for a security.
