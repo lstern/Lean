@@ -1,16 +1,29 @@
-﻿using Newtonsoft.Json;
+﻿/*
+ * QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
+ * Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+*/
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using QuantConnect.Brokerages.Binance.Messages;
 using QuantConnect.Data.Market;
 using QuantConnect.Logging;
+using QuantConnect.Orders;
+using QuantConnect.Orders.Fees;
+using RestSharp;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using QuantConnect.Brokerages.Binance.Messages;
-using System.Globalization;
-using RestSharp;
 using System.Net;
 
 namespace QuantConnect.Brokerages.Binance
@@ -71,6 +84,13 @@ namespace QuantConnect.Brokerages.Binance
                             trade.Price,
                             trade.Quantity
                         );
+                        break;
+                    case "executionReport":
+                        var upd = wrapped.GetValue("data").ToObject<Messages.Execution>();
+                        if (upd.ExecutionType.Equals("CANCELED", StringComparison.OrdinalIgnoreCase))
+                            OnOrderClose(upd);
+                        else if (upd.ExecutionType.Equals("TRADE", StringComparison.OrdinalIgnoreCase))
+                            OnFillOrder(upd);
                         break;
                     default:
                         return;
@@ -167,6 +187,78 @@ namespace QuantConnect.Brokerages.Binance
                     TickType = TickType.Trade
                 });
             }
+        }
+
+        private void OnOrderClose(Execution data)
+        {
+            var order = FindOrderByExternalId(data.OrderId);
+            if (order == null)
+            {
+                // not our order, nothing else to do here
+                return;
+            }
+
+            Orders.Order outOrder;
+            if (CachedOrderIDs.TryRemove(order.Id, out outOrder))
+            {
+                OnOrderEvent(new OrderEvent(
+                    order,
+                    Time.UnixMillisecondTimeStampToDateTime(data.TransactionTime),
+                    OrderFee.Zero,
+                    "Bitfinex Order Event") { Status = OrderStatus.Canceled });
+            }
+        }
+
+        private void OnFillOrder(Execution data)
+        {
+            try
+            {
+                var order = FindOrderByExternalId(data.OrderId);
+                if (order == null)
+                {
+                    // not our order, nothing else to do here
+                    return;
+                }
+
+                var symbol = _symbolMapper.GetLeanSymbol(data.Symbol);
+                var fillPrice = data.LastExecutedPrice;
+                var fillQuantity = data.LastExecutedQuantity;
+                var updTime = Time.UnixMillisecondTimeStampToDateTime(data.TransactionTime);
+                var orderFee = OrderFee.Zero;
+                if (fillQuantity != 0)
+                {
+                    var security = _securityProvider.GetSecurity(order.Symbol);
+                    orderFee = security.FeeModel.GetOrderFee(
+                        new OrderFeeParameters(security, order));
+                }
+
+                var orderEvent = new OrderEvent
+                (
+                    order.Id, symbol, updTime, ConvertOrderStatus(data.OrderStatus),
+                    data.Direction, fillPrice, fillQuantity,
+                    orderFee, $"Bitfinex Order Event {data.Direction}"
+                );
+
+                OnOrderEvent(orderEvent);
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+                throw;
+            }
+        }
+
+        private Orders.Order FindOrderByExternalId(string brokerId)
+        {
+            var order = CachedOrderIDs
+                    .FirstOrDefault(o => o.Value.BrokerId.Contains(brokerId))
+                    .Value;
+            if (order == null)
+            {
+                order = _algorithm.Transactions.GetOrderByBrokerageId(brokerId);
+            }
+
+            return order;
         }
 
         private void FetchOrderBookSnapshot(BinanceOrderBook orderBook)
