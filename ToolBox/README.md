@@ -35,6 +35,7 @@ Example: --app=GoogleDownloader --tickers=SPY,AAPL --resolution=Minute --from-da
 	- YahooDownloader or YDL
 	- IEXDownloader or IEXDL
 	- BitfinexDownloader or BFXDL
+	- BinanceDownloader or MBXDL
 - **'--from-date=yyyyMMdd-HH:mm:ss'** required
 - **'--tickers=SPY,AAPL,etc'** required, except for QuandlBitfinexDownloader (QBDL)
 - **'--resolution=Tick/Second/Minute/Hour/Daily/All'** required, except for QuandlBitfinexDownloader (QBDL), CryptoiqDownloader (CDL). **Case sensitive. Not all downloaders support all resolutions**, send empty for more information.
