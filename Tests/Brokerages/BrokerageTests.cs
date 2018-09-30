@@ -461,7 +461,7 @@ namespace QuantConnect.Tests.Brokerages
         }
 
         [Test]
-        public void GetAccountHoldings()
+        public virtual void GetAccountHoldings()
         {
             Log.Trace("");
             Log.Trace("GET ACCOUNT HOLDINGS");
