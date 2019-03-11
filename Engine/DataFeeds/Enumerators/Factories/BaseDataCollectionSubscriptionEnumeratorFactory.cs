@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using QuantConnect.Data;
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Interfaces;
@@ -38,7 +39,9 @@ namespace QuantConnect.Lean.Engine.DataFeeds.Enumerators.Factories
         /// Specify null to default to <see cref="SubscriptionRequest.TradableDays"/></param>
         public BaseDataCollectionSubscriptionEnumeratorFactory(Func<SubscriptionRequest, IEnumerable<DateTime>> tradableDaysProvider = null)
         {
-            _tradableDaysProvider = tradableDaysProvider ?? (request => request.TradableDays);
+            _tradableDaysProvider = tradableDaysProvider ?? (request =>
+                Enumerable.Range(0, request.EndTimeLocal.Date.Subtract(request.StartTimeLocal.Date).Days + 1)
+                .Select(d => request.StartTimeLocal.Date.AddDays(d)));
         }
 
         /// <summary>
@@ -57,11 +60,14 @@ namespace QuantConnect.Lean.Engine.DataFeeds.Enumerators.Factories
 
                 foreach (var date in tradableDays)
                 {
-                    var source = sourceFactory.GetSource(configuration, date, false);
-                    var factory = SubscriptionDataSourceReader.ForSource(source, dataCacheProvider, configuration, date, false);
-                    var coarseFundamentalForDate = factory.Read(source);
+                    var source = sourceFactory.GetSource(configuration, date.AddDays(-1), false);
+                    var factory = SubscriptionDataSourceReader.ForSource(source, dataCacheProvider, configuration, date.AddDays(-1), false);
+                    var coarseFundamentalForDate = factory.Read(source).ToList();
 
-                    yield return new BaseDataCollection(date.AddDays(1), configuration.Symbol, coarseFundamentalForDate);
+                    if (coarseFundamentalForDate.Count > 0)
+                    {
+                        yield return new BaseDataCollection(date.AddDays(1), configuration.Symbol, coarseFundamentalForDate);
+                    }
                 }
             }
         }
