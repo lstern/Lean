@@ -15,7 +15,6 @@
 */
 
 using System;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Threading;
 using QuantConnect.Configuration;
@@ -28,8 +27,6 @@ namespace QuantConnect.Lean.Launcher
 {
     public class Program
     {
-        private const string _collapseMessage = "Unhandled exception breaking past controls and causing collapse of algorithm node. This is likely a memory leak of an external dependency or the underlying OS terminating the LEAN engine.";
-
         static Program()
         {
             AppDomain.CurrentDomain.AssemblyLoad += (sender, e) =>
@@ -43,95 +40,85 @@ namespace QuantConnect.Lean.Launcher
 
         static void Main(string[] args)
         {
-            //Initialize:
-            var mode = "RELEASE";
-            #if DEBUG
-                mode = "DEBUG";
-            #endif
+            ParseArguments(args);
+            InitLogger();
+            PrepareEnvironment();
+            ExecutePendingJobs();
+        }
+
+        private static void ExecutePendingJobs()
+        {
+            var leanEngineSystemHandlers = LeanEngineSystemHandlers.FromConfiguration(Composer.Instance);
+            leanEngineSystemHandlers.Initialize();
+
+            var job = leanEngineSystemHandlers.JobQueue.NextJob(out string assemblyPath);
+
+            var leanEngineAlgorithmHandlers = LeanEngineAlgorithmHandlers.FromConfiguration(Composer.Instance);
+            ExecuteJob(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, job, assemblyPath);
+        }
+
+        private static void ParseArguments(string[] args)
+        {
+            // expect first argument to be config file name
+            if (args.Length > 0)
+            {
+                Config.MergeCommandLineArgumentsWithConfiguration(LeanArgumentParser.ParseArguments(args));
+            }
+        }
+
+        private static void InitLogger()
+        {
+            Log.DebuggingEnabled = Config.GetBool("debug-mode");
+            Log.LogHandler = Composer.Instance.GetExportedValueByTypeName<ILogHandler>(Config.Get("log-handler", "CompositeLogHandler"));
+            Log.Trace($"Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v{Globals.Version}");
+            Log.Trace($"Engine.Main(): Started {DateTime.Now.ToShortTimeString()}");
+        }
+
+
+        private static void PrepareEnvironment()
+        {
+            Thread.CurrentThread.Name = "Algorithm Analysis Thread";
 
             if (OS.IsWindows)
             {
                 Console.OutputEncoding = System.Text.Encoding.Unicode;
             }
 
-            // expect first argument to be config file name
-            if (args.Length > 0)
-            {
-                Config.MergeCommandLineArgumentsWithConfiguration(LeanArgumentParser.ParseArguments(args));
-            }
-
             var environment = Config.Get("environment");
-            var liveMode = Config.GetBool("live-mode");
-            Log.DebuggingEnabled = Config.GetBool("debug-mode");
-            Log.LogHandler = Composer.Instance.GetExportedValueByTypeName<ILogHandler>(Config.Get("log-handler", "CompositeLogHandler"));
-
-            //Name thread for the profiler:
-            Thread.CurrentThread.Name = "Algorithm Analysis Thread";
-            Log.Trace($"Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v{Globals.Version} Mode: {mode} (" + (Environment.Is64BitProcess ? "64" : "32") + "bit)");
-            Log.Trace($"Engine.Main(): Started {DateTime.Now.ToShortTimeString()}");
-
-            //Import external libraries specific to physical server location (cloud/local)
-            LeanEngineSystemHandlers leanEngineSystemHandlers;
-            try
-            {
-                leanEngineSystemHandlers = LeanEngineSystemHandlers.FromConfiguration(Composer.Instance);
-            }
-            catch (CompositionException compositionException)
-            {
-                Log.Error($"Engine.Main(): Failed to load library: {compositionException}");
-                throw;
-            }
-
-            //Setup packeting, queue and controls system: These don't do much locally.
-            leanEngineSystemHandlers.Initialize();
-
-            //-> Pull job from QuantConnect job queue, or, pull local build:
-            string assemblyPath;
-            var job = leanEngineSystemHandlers.JobQueue.NextJob(out assemblyPath);
-
-            if (job == null)
-            {
-                throw new Exception("Engine.Main(): Job was null.");
-            }
-
-            LeanEngineAlgorithmHandlers leanEngineAlgorithmHandlers;
-            try
-            {
-                leanEngineAlgorithmHandlers = LeanEngineAlgorithmHandlers.FromConfiguration(Composer.Instance);
-            }
-            catch (CompositionException compositionException)
-            {
-                Log.Error("Engine.Main(): Failed to load library: " + compositionException);
-                throw;
-            }
-
             if (environment.EndsWith("-desktop"))
             {
                 var info = new ProcessStartInfo
                 {
                     UseShellExecute = false,
-                    FileName  = Config.Get("desktop-exe"),
+                    FileName = Config.Get("desktop-exe"),
                     Arguments = Config.Get("desktop-http-port")
                 };
+
                 Process.Start(info);
             }
+        }
 
+        private static void ExecuteJob(LeanEngineSystemHandlers leanEngineSystemHandlers, LeanEngineAlgorithmHandlers leanEngineAlgorithmHandlers, AlgorithmNodePacket job, string assemblyPath)
+        {
             // if the job version doesn't match this instance version then we can't process it
             // we also don't want to reprocess redelivered jobs
             if (VersionHelper.IsNotEqualVersion(job.Version) || job.Redelivered)
             {
+                var collapseMessage = "Unhandled exception breaking past controls and causing collapse of algorithm node. This is likely a memory leak of an external dependency or the underlying OS terminating the LEAN engine.";
+
                 Log.Error("Engine.Run(): Job Version: " + job.Version + "  Deployed Version: " + Globals.Version + " Redelivered: " + job.Redelivered);
                 //Tiny chance there was an uncontrolled collapse of a server, resulting in an old user task circulating.
                 //In this event kill the old algorithm and leave a message so the user can later review.
-                leanEngineSystemHandlers.Api.SetAlgorithmStatus(job.AlgorithmId, AlgorithmStatus.RuntimeError, _collapseMessage);
+                leanEngineSystemHandlers.Api.SetAlgorithmStatus(job.AlgorithmId, AlgorithmStatus.RuntimeError, collapseMessage);
                 leanEngineSystemHandlers.Notify.SetAuthentication(job);
-                leanEngineSystemHandlers.Notify.Send(new RuntimeErrorPacket(job.UserId, job.AlgorithmId, _collapseMessage));
+                leanEngineSystemHandlers.Notify.Send(new RuntimeErrorPacket(job.UserId, job.AlgorithmId, collapseMessage));
                 leanEngineSystemHandlers.JobQueue.AcknowledgeJob(job);
                 return;
             }
 
             try
             {
+                var liveMode = Config.GetBool("live-mode");
                 var algorithmManager = new AlgorithmManager(liveMode);
 
                 leanEngineSystemHandlers.LeanManager.Initialize(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, job, algorithmManager);
@@ -148,8 +135,8 @@ namespace QuantConnect.Lean.Launcher
                 // clean up resources
                 leanEngineSystemHandlers.Dispose();
                 leanEngineAlgorithmHandlers.Dispose();
-                Log.LogHandler.Dispose();
 
+                Log.LogHandler.Dispose();
                 Log.Trace("Program.Main(): Exiting Lean...");
 
                 Environment.Exit(0);

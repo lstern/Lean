@@ -49,10 +49,8 @@ namespace QuantConnect.Lean.Engine
         private DateTime _previousTime;
         private IAlgorithm _algorithm;
         private readonly object _lock = new object();
-        private string _algorithmId = "";
         private DateTime _currentTimeStepTime;
         private readonly TimeSpan _timeLoopMaximum = TimeSpan.FromMinutes(Config.GetDouble("algorithm-manager-time-loop-maximum", 20));
-        private long _dataPointCount;
 
         /// <summary>
         /// Publicly accessible algorithm status
@@ -65,10 +63,7 @@ namespace QuantConnect.Lean.Engine
         /// <summary>
         /// Public access to the currently running algorithm id.
         /// </summary>
-        public string AlgorithmId
-        {
-            get { return _algorithmId; }
-        }
+        public string AlgorithmId { get; private set; } = "";
 
         /// <summary>
         /// Gets the amount of time spent on the current time step
@@ -98,10 +93,7 @@ namespace QuantConnect.Lean.Engine
         /// <summary>
         /// Gets the number of data points processed per second
         /// </summary>
-        public long DataPoints
-        {
-            get { return _dataPointCount; }
-        }
+        public long DataPoints { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AlgorithmManager"/> class
@@ -138,7 +130,7 @@ namespace QuantConnect.Lean.Engine
         public void Run(AlgorithmNodePacket job, IAlgorithm algorithm, ISynchronizer synchronizer, ITransactionHandler transactions, IResultHandler results, IRealTimeHandler realtime, ILeanManager leanManager, IAlphaHandler alphas, CancellationToken token)
         {
             //Initialize:
-            _dataPointCount = 0;
+            DataPoints = 0;
             _algorithm = algorithm;
             var portfolioValue = algorithm.Portfolio.TotalPortfolioValue;
             var backtestMode = (job.Type == PacketType.BacktestNode);
@@ -152,7 +144,7 @@ namespace QuantConnect.Lean.Engine
             var splitWarnings = new List<Split>();
 
             //Initialize Properties:
-            _algorithmId = job.AlgorithmId;
+            AlgorithmId = job.AlgorithmId;
             _algorithm.Status = AlgorithmStatus.Running;
             _previousTime = algorithm.StartDate.Date;
 
@@ -226,7 +218,7 @@ namespace QuantConnect.Lean.Engine
                 leanManager.Update();
 
                 var time = timeSlice.Time;
-                _dataPointCount += timeSlice.DataPointCount;
+                DataPoints += timeSlice.DataPointCount;
 
                 //If we're in backtest mode we need to capture the daily performance. We do this here directly
                 //before updating the algorithm state with the new data from this time step, otherwise we'll
