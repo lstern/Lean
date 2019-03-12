@@ -17,11 +17,8 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.IO;
 using System.Threading;
-using System.Windows.Forms;
 using QuantConnect.Configuration;
-using QuantConnect.Interfaces;
 using QuantConnect.Lean.Engine;
 using QuantConnect.Logging;
 using QuantConnect.Packets;
@@ -70,8 +67,8 @@ namespace QuantConnect.Lean.Launcher
 
             //Name thread for the profiler:
             Thread.CurrentThread.Name = "Algorithm Analysis Thread";
-            Log.Trace("Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v" + Globals.Version + " Mode: " + mode + " (" + (Environment.Is64BitProcess ? "64" : "32") + "bit)");
-            Log.Trace("Engine.Main(): Started " + DateTime.Now.ToShortTimeString());
+            Log.Trace($"Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v{Globals.Version} Mode: {mode} (" + (Environment.Is64BitProcess ? "64" : "32") + "bit)");
+            Log.Trace($"Engine.Main(): Started {DateTime.Now.ToShortTimeString()}");
 
             //Import external libraries specific to physical server location (cloud/local)
             LeanEngineSystemHandlers leanEngineSystemHandlers;
@@ -81,7 +78,7 @@ namespace QuantConnect.Lean.Launcher
             }
             catch (CompositionException compositionException)
             {
-                Log.Error("Engine.Main(): Failed to load library: " + compositionException);
+                Log.Error($"Engine.Main(): Failed to load library: {compositionException}");
                 throw;
             }
 

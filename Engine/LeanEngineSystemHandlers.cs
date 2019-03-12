@@ -29,43 +29,27 @@ namespace QuantConnect.Lean.Engine
     /// </summary>
     public class LeanEngineSystemHandlers : IDisposable
     {
-        private readonly IApi _api;
-        private readonly IMessagingHandler _notify;
-        private readonly IJobQueueHandler _jobQueue;
-        private readonly ILeanManager _leanManager;
 
         /// <summary>
         /// Gets the api instance used for communicating algorithm limits, status, and storing of log data
         /// </summary>
-        public IApi Api
-        {
-            get { return _api; }
-        }
+        public IApi Api { get; }
 
         /// <summary>
         /// Gets the messaging handler instance used for communicating various packets to listeners, including
         /// debug/log messages, email/sms/web messages, as well as results and run time errors
         /// </summary>
-        public IMessagingHandler Notify
-        {
-            get { return _notify; }
-        }
+        public IMessagingHandler Notify { get; }
 
         /// <summary>
         /// Gets the job queue responsible for acquiring and acknowledging an algorithm job
         /// </summary>
-        public IJobQueueHandler JobQueue
-        {
-            get { return _jobQueue; }
-        }
+        public IJobQueueHandler JobQueue { get; }
 
         /// <summary>
         /// Gets the ILeanManager implementation using to enhance the hosting environment
         /// </summary>
-        public ILeanManager LeanManager
-        {
-            get { return _leanManager; }
-        }
+        public ILeanManager LeanManager { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LeanEngineSystemHandlers"/> class with the specified handles
@@ -76,26 +60,10 @@ namespace QuantConnect.Lean.Engine
         /// <param name="leanManager"></param>
         public LeanEngineSystemHandlers(IJobQueueHandler jobQueue, IApi api, IMessagingHandler notify, ILeanManager leanManager)
         {
-            if (jobQueue == null)
-            {
-                throw new ArgumentNullException("jobQueue");
-            }
-            if (api == null)
-            {
-                throw new ArgumentNullException("api");
-            }
-            if (notify == null)
-            {
-                throw new ArgumentNullException("notify");
-            }
-            if (leanManager == null)
-            {
-                throw new ArgumentNullException("leanManager");
-            }
-            _api = api;
-            _jobQueue = jobQueue;
-            _notify = notify;
-            _leanManager = leanManager;
+            Api = api ?? throw new ArgumentNullException("api");
+            JobQueue = jobQueue ?? throw new ArgumentNullException("jobQueue");
+            Notify = notify ?? throw new ArgumentNullException("notify");
+            LeanManager = leanManager ?? throw new ArgumentNullException("leanManager");
         }
 
         /// <summary>
