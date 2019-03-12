@@ -34,7 +34,7 @@ namespace QuantConnect.Interfaces
         /// Request the next task to run through the engine:
         /// </summary>
         /// <returns>Algorithm job to process</returns>
-        AlgorithmNodePacket NextJob(out string algorithmPath);
+        AlgorithmNodePacket NextJob();
 
         /// <summary>
         /// Signal task complete

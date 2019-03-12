@@ -80,77 +80,6 @@ namespace QuantConnect.Lean.Engine
         public IAlphaHandler Alphas { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LeanEngineAlgorithmHandlers"/> class from the specified handlers
-        /// </summary>
-        /// <param name="results">The result handler for communicating results from the algorithm</param>
-        /// <param name="setup">The setup handler used to initialize algorithm state</param>
-        /// <param name="dataFeed">The data feed handler used to pump data to the algorithm</param>
-        /// <param name="transactions">The transaction handler used to process orders from the algorithm</param>
-        /// <param name="realTime">The real time handler used to process real time events</param>
-        /// <param name="mapFileProvider">The map file provider used to retrieve map files for the data feed</param>
-        /// <param name="factorFileProvider">Map file provider used as a map file source for the data feed</param>
-        /// <param name="dataProvider">file provider used to retrieve security data if it is not on the file system</param>
-        /// <param name="alphas">The alpha handler used to process generated insights</param>
-        public LeanEngineAlgorithmHandlers(IResultHandler results,
-            ISetupHandler setup,
-            IDataFeed dataFeed,
-            ITransactionHandler transactions,
-            IRealTimeHandler realTime,
-            IMapFileProvider mapFileProvider,
-            IFactorFileProvider factorFileProvider,
-            IDataProvider dataProvider,
-            IAlphaHandler alphas
-            )
-        {
-            if (results == null)
-            {
-                throw new ArgumentNullException(nameof(results));
-            }
-            if (setup == null)
-            {
-                throw new ArgumentNullException(nameof(setup));
-            }
-            if (dataFeed == null)
-            {
-                throw new ArgumentNullException(nameof(dataFeed));
-            }
-            if (transactions == null)
-            {
-                throw new ArgumentNullException(nameof(transactions));
-            }
-            if (realTime == null)
-            {
-                throw new ArgumentNullException(nameof(realTime));
-            }
-            if (mapFileProvider == null)
-            {
-                throw new ArgumentNullException(nameof(mapFileProvider));
-            }
-            if (factorFileProvider == null)
-            {
-                throw new ArgumentNullException(nameof(factorFileProvider));
-            }
-            if (dataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(dataProvider));
-            }
-            if (alphas == null)
-            {
-                throw new ArgumentNullException(nameof(alphas));
-            }
-
-            Results = results;
-            Setup = setup;
-            DataFeed = dataFeed;
-            Transactions = transactions;
-            RealTime = realTime;
-            MapFileProvider = mapFileProvider;
-            FactorFileProvider = factorFileProvider;
-            DataProvider = dataProvider;
-            Alphas = alphas;
-        }
-
-        /// <summary>
         /// Creates a new instance of the <see cref="LeanEngineAlgorithmHandlers"/> class from the specified composer using type names from configuration
         /// </summary>
         /// <param name="composer">The composer instance to obtain implementations from</param>
@@ -179,6 +108,40 @@ namespace QuantConnect.Lean.Engine
                 composer.GetExportedValueByTypeName<IDataProvider>(dataProviderTypeName),
                 composer.GetExportedValueByTypeName<IAlphaHandler>(alphaHandlerTypeName)
                 );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeanEngineAlgorithmHandlers"/> class from the specified handlers
+        /// </summary>
+        /// <param name="results">The result handler for communicating results from the algorithm</param>
+        /// <param name="setup">The setup handler used to initialize algorithm state</param>
+        /// <param name="dataFeed">The data feed handler used to pump data to the algorithm</param>
+        /// <param name="transactions">The transaction handler used to process orders from the algorithm</param>
+        /// <param name="realTime">The real time handler used to process real time events</param>
+        /// <param name="mapFileProvider">The map file provider used to retrieve map files for the data feed</param>
+        /// <param name="factorFileProvider">Map file provider used as a map file source for the data feed</param>
+        /// <param name="dataProvider">file provider used to retrieve security data if it is not on the file system</param>
+        /// <param name="alphas">The alpha handler used to process generated insights</param>
+        private LeanEngineAlgorithmHandlers(IResultHandler results,
+            ISetupHandler setup,
+            IDataFeed dataFeed,
+            ITransactionHandler transactions,
+            IRealTimeHandler realTime,
+            IMapFileProvider mapFileProvider,
+            IFactorFileProvider factorFileProvider,
+            IDataProvider dataProvider,
+            IAlphaHandler alphas
+            )
+        {
+            Results = results ?? throw new ArgumentNullException(nameof(results));
+            Setup = setup ?? throw new ArgumentNullException(nameof(setup));
+            DataFeed = dataFeed ?? throw new ArgumentNullException(nameof(dataFeed));
+            Transactions = transactions ?? throw new ArgumentNullException(nameof(transactions));
+            RealTime = realTime ?? throw new ArgumentNullException(nameof(realTime));
+            MapFileProvider = mapFileProvider ?? throw new ArgumentNullException(nameof(mapFileProvider));
+            FactorFileProvider = factorFileProvider ?? throw new ArgumentNullException(nameof(factorFileProvider));
+            DataProvider = dataProvider ?? throw new ArgumentNullException(nameof(dataProvider));
+            Alphas = alphas ?? throw new ArgumentNullException(nameof(alphas));
         }
 
         /// <summary>

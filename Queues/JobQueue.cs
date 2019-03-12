@@ -67,9 +67,9 @@ namespace QuantConnect.Queues
         /// Desktop/Local Get Next Task - Get task from the Algorithm folder of VS Solution.
         /// </summary>
         /// <returns></returns>
-        public AlgorithmNodePacket NextJob(out string location)
+        public AlgorithmNodePacket NextJob()
         {
-            location = GetAlgorithmLocation();
+            var location = GetAlgorithmLocation();
 
             Log.Trace("JobQueue.NextJob(): Selected " + location);
 
@@ -109,7 +109,8 @@ namespace QuantConnect.Queues
                     DeployId = AlgorithmTypeName,
                     Parameters = parameters,
                     Language = Language,
-                    Controls = controls
+                    Controls = controls,
+                    AlgorithmPath = location,
                 };
 
                 try
@@ -140,7 +141,8 @@ namespace QuantConnect.Queues
                 BacktestId = AlgorithmTypeName,
                 Language = Language,
                 Parameters = parameters,
-                Controls = controls
+                Controls = controls,
+                AlgorithmPath = location,
             };
 
             return backtestJob;

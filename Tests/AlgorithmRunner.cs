@@ -77,29 +77,26 @@ namespace QuantConnect.Tests
                 var debugEnabled = Log.DebuggingEnabled;
 
 
-                var logHandlers = new ILogHandler[] {new ConsoleLogHandler(), new FileLogHandler(logFile, false)};
+                var logHandlers = new ILogHandler[] { new ConsoleLogHandler(), new FileLogHandler(logFile, false) };
                 using (Log.LogHandler = new CompositeLogHandler(logHandlers))
-                using (var algorithmHandlers = LeanEngineAlgorithmHandlers.FromConfiguration(Composer.Instance))
-                using (var systemHandlers = LeanEngineSystemHandlers.FromConfiguration(Composer.Instance))
-                {
                     Log.DebuggingEnabled = true;
 
-                    Log.LogHandler.Trace("");
-                    Log.LogHandler.Trace("{0}: Running " + algorithm + "...", DateTime.UtcNow);
-                    Log.LogHandler.Trace("");
+                Log.LogHandler.Trace("");
+                Log.LogHandler.Trace("{0}: Running " + algorithm + "...", DateTime.UtcNow);
+                Log.LogHandler.Trace("");
 
-                    // run the algorithm in its own thread
+                // run the algorithm in its own thread
 
-                    var engine = new Lean.Engine.Engine(systemHandlers, algorithmHandlers, false);
+                using (var engine = new Lean.Engine.Engine(false))
+                {
                     Task.Factory.StartNew(() =>
                     {
                         try
                         {
-                            string algorithmPath;
-                            var job = systemHandlers.JobQueue.NextJob(out algorithmPath);
+                            var job = engine.NextJob();
                             ((BacktestNodePacket)job).BacktestId = algorithm;
-                            engine.Run(job, algorithmManager, algorithmPath);
-                            ordersLogFile = ((RegressionResultHandler)algorithmHandlers.Results).OrdersLogFilePath;
+                            engine.Run(job, algorithmManager);
+                            ordersLogFile = ((RegressionResultHandler)engine.AlgorithmHandlers.Results).OrdersLogFilePath;
                         }
                         catch (Exception e)
                         {
@@ -107,10 +104,10 @@ namespace QuantConnect.Tests
                         }
                     }).Wait();
 
-                    var backtestingResultHandler = (BacktestingResultHandler) algorithmHandlers.Results;
+                    var backtestingResultHandler = (BacktestingResultHandler)engine.AlgorithmHandlers.Results;
                     statistics = backtestingResultHandler.FinalStatistics;
 
-                    var defaultAlphaHandler = (DefaultAlphaHandler) algorithmHandlers.Alphas;
+                    var defaultAlphaHandler = (DefaultAlphaHandler)engine.AlgorithmHandlers.Alphas;
                     alphaStatistics = defaultAlphaHandler.RuntimeStatistics;
 
                     Log.DebuggingEnabled = debugEnabled;

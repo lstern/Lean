@@ -48,13 +48,33 @@ namespace QuantConnect.Lean.Launcher
 
         private static void ExecutePendingJobs()
         {
-            var leanEngineSystemHandlers = LeanEngineSystemHandlers.FromConfiguration(Composer.Instance);
-            leanEngineSystemHandlers.Initialize();
+            var liveMode = Config.GetBool("live-mode");
 
-            var job = leanEngineSystemHandlers.JobQueue.NextJob(out string assemblyPath);
+            using (var engine = new Engine.Engine(liveMode))
+            {
+                var job = engine.NextJob();
 
-            var leanEngineAlgorithmHandlers = LeanEngineAlgorithmHandlers.FromConfiguration(Composer.Instance);
-            ExecuteJob(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, job, assemblyPath);
+                var isValidJob = engine.ValidateJob(job);
+                if (isValidJob)
+                {
+                    try
+                    {
+                        var algorithmManager = new AlgorithmManager(liveMode);
+                        engine.Run(job, algorithmManager);
+                    }
+                    finally
+                    {
+                        //Delete the message from the job queue:
+                        engine.AcknowledgeJob(job);
+
+                        Log.Trace("Engine.Main(): Packet removed from queue: " + job.AlgorithmId);
+                        Log.LogHandler.Dispose();
+                        Log.Trace("Program.Main(): Exiting Lean...");
+
+                        Environment.Exit(0);
+                    }
+                }
+            }
         }
 
         private static void ParseArguments(string[] args)
@@ -73,7 +93,6 @@ namespace QuantConnect.Lean.Launcher
             Log.Trace($"Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v{Globals.Version}");
             Log.Trace($"Engine.Main(): Started {DateTime.Now.ToShortTimeString()}");
         }
-
 
         private static void PrepareEnvironment()
         {
@@ -95,51 +114,6 @@ namespace QuantConnect.Lean.Launcher
                 };
 
                 Process.Start(info);
-            }
-        }
-
-        private static void ExecuteJob(LeanEngineSystemHandlers leanEngineSystemHandlers, LeanEngineAlgorithmHandlers leanEngineAlgorithmHandlers, AlgorithmNodePacket job, string assemblyPath)
-        {
-            // if the job version doesn't match this instance version then we can't process it
-            // we also don't want to reprocess redelivered jobs
-            if (VersionHelper.IsNotEqualVersion(job.Version) || job.Redelivered)
-            {
-                var collapseMessage = "Unhandled exception breaking past controls and causing collapse of algorithm node. This is likely a memory leak of an external dependency or the underlying OS terminating the LEAN engine.";
-
-                Log.Error("Engine.Run(): Job Version: " + job.Version + "  Deployed Version: " + Globals.Version + " Redelivered: " + job.Redelivered);
-                //Tiny chance there was an uncontrolled collapse of a server, resulting in an old user task circulating.
-                //In this event kill the old algorithm and leave a message so the user can later review.
-                leanEngineSystemHandlers.Api.SetAlgorithmStatus(job.AlgorithmId, AlgorithmStatus.RuntimeError, collapseMessage);
-                leanEngineSystemHandlers.Notify.SetAuthentication(job);
-                leanEngineSystemHandlers.Notify.Send(new RuntimeErrorPacket(job.UserId, job.AlgorithmId, collapseMessage));
-                leanEngineSystemHandlers.JobQueue.AcknowledgeJob(job);
-                return;
-            }
-
-            try
-            {
-                var liveMode = Config.GetBool("live-mode");
-                var algorithmManager = new AlgorithmManager(liveMode);
-
-                leanEngineSystemHandlers.LeanManager.Initialize(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, job, algorithmManager);
-
-                var engine = new Engine.Engine(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, liveMode);
-                engine.Run(job, algorithmManager, assemblyPath);
-            }
-            finally
-            {
-                //Delete the message from the job queue:
-                leanEngineSystemHandlers.JobQueue.AcknowledgeJob(job);
-                Log.Trace("Engine.Main(): Packet removed from queue: " + job.AlgorithmId);
-
-                // clean up resources
-                leanEngineSystemHandlers.Dispose();
-                leanEngineAlgorithmHandlers.Dispose();
-
-                Log.LogHandler.Dispose();
-                Log.Trace("Program.Main(): Exiting Lean...");
-
-                Environment.Exit(0);
             }
         }
     }

@@ -20,6 +20,7 @@ using QuantConnect.Configuration;
 using QuantConnect.Interfaces;
 using QuantConnect.Lean.Engine.Server;
 using QuantConnect.Logging;
+using QuantConnect.Packets;
 using QuantConnect.Util;
 
 namespace QuantConnect.Lean.Engine
@@ -74,21 +75,16 @@ namespace QuantConnect.Lean.Engine
         /// <exception cref="CompositionException">Throws a CompositionException during failure to load</exception>
         public static LeanEngineSystemHandlers FromConfiguration(Composer composer)
         {
-            return new LeanEngineSystemHandlers(
+            var leanEngineSystemHandlers = new LeanEngineSystemHandlers(
                 composer.GetExportedValueByTypeName<IJobQueueHandler>(Config.Get("job-queue-handler")),
                 composer.GetExportedValueByTypeName<IApi>(Config.Get("api-handler")),
                 composer.GetExportedValueByTypeName<IMessagingHandler>(Config.Get("messaging-handler")), 
                 composer.GetExportedValueByTypeName<ILeanManager>(Config.Get("lean-manager-type", "LocalLeanManager")));
-        }
 
-        /// <summary>
-        /// Initializes the Api, Messaging, and JobQueue components
-        /// </summary>
-        public void Initialize()
-        {
-            Api.Initialize(Config.GetInt("job-user-id", 0), Config.Get("api-access-token", ""), Config.Get("data-folder"));
-            Notify.Initialize();
-            JobQueue.Initialize(Api);
+            leanEngineSystemHandlers.Api.Initialize(Config.GetInt("job-user-id", 0), Config.Get("api-access-token", ""), Config.Get("data-folder"));
+            leanEngineSystemHandlers.Notify.Initialize();
+            leanEngineSystemHandlers.JobQueue.Initialize(leanEngineSystemHandlers.Api);
+            return leanEngineSystemHandlers;
         }
 
         /// <summary>
