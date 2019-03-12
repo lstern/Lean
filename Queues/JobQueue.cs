@@ -73,6 +73,70 @@ namespace QuantConnect.Queues
 
             Log.Trace("JobQueue.NextJob(): Selected " + location);
 
+            var job = GetJobInstance();
+            job.Algorithm = File.ReadAllBytes(AlgorithmLocation);
+            job.HistoryProvider = Config.Get("history-provider", DefaultHistoryProvider);
+            job.Channel = AccessToken;
+            job.UserToken = AccessToken;
+            job.UserId = UserId;
+            job.ProjectId = ProjectId;
+            job.Version = Globals.Version;
+            job.Language = Language;
+            job.Parameters = GetParameters();
+            job.Controls = GetControls();
+            job.AlgorithmPath = location;
+
+            return job;
+        }
+
+        private AlgorithmNodePacket GetJobInstance()
+        {
+            if (!_liveMode)
+            {
+                return new BacktestNodePacket(0, 0, "", new byte[] { }, 10000, "local") {
+                    Type = PacketType.BacktestNode,
+                    BacktestId = AlgorithmTypeName
+                };
+            }
+
+            var liveJob = new LiveNodePacket
+            {
+                Type = PacketType.LiveNode,
+                Brokerage = Config.Get("live-mode-brokerage", PaperBrokerageTypeName),
+                DataQueueHandler = Config.Get("data-queue-handler", DefaultDataQueueHandler),
+                DeployId = AlgorithmTypeName
+            };
+
+            try
+            {
+                // import the brokerage data for the configured brokerage
+                var brokerageFactory = Composer.Instance.Single<IBrokerageFactory>(factory => factory.BrokerageType.MatchesTypeName(liveJob.Brokerage));
+                liveJob.BrokerageData = brokerageFactory.BrokerageData;
+            }
+            catch (Exception err)
+            {
+                Log.Error(err, string.Format("Error resolving BrokerageData for live job for brokerage {0}:", liveJob.Brokerage));
+            }
+
+            return liveJob;
+        }
+
+        private Controls GetControls()
+        {
+            var controls = new Controls()
+            {
+                MinuteLimit = Config.GetInt("symbol-minute-limit", 10000),
+                SecondLimit = Config.GetInt("symbol-second-limit", 10000),
+                TickLimit = Config.GetInt("symbol-tick-limit", 10000),
+                RamAllocation = int.MaxValue,
+                MaximumDataPointsPerChartSeries = Config.GetInt("maximum-data-points-per-chart-series", 4000)
+            };
+
+            return controls;
+        }
+
+        private Dictionary<string, string> GetParameters()
+        {
             // check for parameters in the config
             var parameters = new Dictionary<string, string>();
 
@@ -82,70 +146,7 @@ namespace QuantConnect.Queues
                 parameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(parametersConfigString);
             }
 
-            var controls = new Controls()
-            {
-                MinuteLimit = Config.GetInt("symbol-minute-limit", 10000),
-                SecondLimit = Config.GetInt("symbol-second-limit", 10000),
-                TickLimit = Config.GetInt("symbol-tick-limit", 10000),
-                RamAllocation = int.MaxValue,
-                MaximumDataPointsPerChartSeries =  Config.GetInt("maximum-data-points-per-chart-series", 4000)
-            };
-
-            //If this isn't a backtesting mode/request, attempt a live job.
-            if (_liveMode)
-            {
-                var liveJob = new LiveNodePacket
-                {
-                    Type = PacketType.LiveNode,
-                    Algorithm = File.ReadAllBytes(AlgorithmLocation),
-                    Brokerage = Config.Get("live-mode-brokerage", PaperBrokerageTypeName),
-                    HistoryProvider = Config.Get("history-provider", DefaultHistoryProvider),
-                    DataQueueHandler = Config.Get("data-queue-handler", DefaultDataQueueHandler),
-                    Channel = AccessToken,
-                    UserToken = AccessToken,
-                    UserId = UserId,
-                    ProjectId = ProjectId,
-                    Version = Globals.Version,
-                    DeployId = AlgorithmTypeName,
-                    Parameters = parameters,
-                    Language = Language,
-                    Controls = controls,
-                    AlgorithmPath = location,
-                };
-
-                try
-                {
-                    // import the brokerage data for the configured brokerage
-                    var brokerageFactory = Composer.Instance.Single<IBrokerageFactory>(factory => factory.BrokerageType.MatchesTypeName(liveJob.Brokerage));
-                    liveJob.BrokerageData = brokerageFactory.BrokerageData;
-                }
-                catch (Exception err)
-                {
-                    Log.Error(err, string.Format("Error resolving BrokerageData for live job for brokerage {0}:", liveJob.Brokerage));
-                }
-
-                return liveJob;
-            }
-
-            //Default run a backtesting job.
-            var backtestJob = new BacktestNodePacket(0, 0, "", new byte[] {}, 10000, "local")
-            {
-                Type = PacketType.BacktestNode,
-                Algorithm = File.ReadAllBytes(AlgorithmLocation),
-                HistoryProvider = Config.Get("history-provider", DefaultHistoryProvider),
-                Channel = AccessToken,
-                UserToken = AccessToken,
-                UserId = UserId,
-                ProjectId = ProjectId,
-                Version = Globals.Version,
-                BacktestId = AlgorithmTypeName,
-                Language = Language,
-                Parameters = parameters,
-                Controls = controls,
-                AlgorithmPath = location,
-            };
-
-            return backtestJob;
+            return parameters;
         }
 
         /// <summary>
@@ -154,23 +155,26 @@ namespace QuantConnect.Queues
         /// <returns></returns>
         private string GetAlgorithmLocation()
         {
-            if (Language == Language.Python)
+            if (Language != Language.Python)
             {
-                var pythonSource = AlgorithmTypeName + ".py";
+                return AlgorithmLocation;
+            }
+
+            var pythonSource = AlgorithmTypeName + ".py";
+            if (!File.Exists(pythonSource))
+            {
+                // Copies file to execution location
+                foreach (var file in new DirectoryInfo(AlgorithmPathPython).GetFiles("*.py"))
+                {
+                    file.CopyTo(file.FullName.Replace(file.DirectoryName, Environment.CurrentDirectory), true);
+                }
+
                 if (!File.Exists(pythonSource))
                 {
-                    // Copies file to execution location
-                    foreach (var file in new DirectoryInfo(AlgorithmPathPython).GetFiles("*.py"))
-                    {
-                        file.CopyTo(file.FullName.Replace(file.DirectoryName, Environment.CurrentDirectory), true);
-                    }
-
-                    if (!File.Exists(pythonSource))
-                    {
-                        throw new Exception("JobQueue.TryCreatePythonAlgorithm(): Unable to find py file: " + pythonSource);
-                    }
+                    throw new Exception("JobQueue.TryCreatePythonAlgorithm(): Unable to find py file: " + pythonSource);
                 }
             }
+
             return AlgorithmLocation;
         }
 
