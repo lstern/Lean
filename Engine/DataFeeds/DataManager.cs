@@ -79,8 +79,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                             var end = algorithm.LiveMode ? Time.EndOfTime
                                 : algorithm.EndDate.ConvertToUtc(algorithm.TimeZone);
 
-                            Security security;
-                            if (!algorithm.Securities.TryGetValue(config.Symbol, out security))
+                            if (!algorithm.Securities.TryGetValue(config.Symbol, out Security security))
                             {
                                 // create a canonical security object if it doesn't exist
                                 security = new Security(
@@ -185,9 +184,8 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         public bool RemoveSubscription(SubscriptionDataConfig configuration, Universe universe = null)
         {
             // remove the subscription from our collection, if it exists
-            Subscription subscription;
 
-            if (DataFeedSubscriptions.TryGetValue(configuration, out subscription))
+            if (DataFeedSubscriptions.TryGetValue(configuration, out Subscription subscription))
             {
                 // we remove the subscription when there are no other requests left
                 if (subscription.RemoveSubscriptionRequest(universe))
