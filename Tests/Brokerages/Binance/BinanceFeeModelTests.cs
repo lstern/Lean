@@ -29,8 +29,8 @@ namespace QuantConnect.Tests.Brokerages.Binance
                         false,
                         false
                     ),
-                    new Cash(CashBook.AccountCurrency, 0, 1m),
-                    SymbolProperties.GetDefault(CashBook.AccountCurrency),
+                    new Cash(Currencies.USD, 0, 1m),
+                    SymbolProperties.GetDefault(Currencies.USD),
                     ErrorCurrencyConverter.Instance
                 );
                 security.SetMarketPrice(new Tick(DateTime.UtcNow, Symbol, LowPrice, HighPrice));
