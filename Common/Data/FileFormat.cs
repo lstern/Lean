@@ -26,6 +26,11 @@ namespace QuantConnect.Data
         Csv,
 
         /// <summary>
+        /// Binary format used by Valyria
+        /// </summary>
+        Valyria,
+
+        /// <summary>
         /// Binary file data
         /// </summary>
         Binary,

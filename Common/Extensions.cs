@@ -1304,7 +1304,6 @@ namespace QuantConnect
         {
             task.ConfigureAwait(false).GetAwaiter().GetResult();
         }
-
         /// <summary>
         /// Convert dictionary to query string
         /// </summary>
@@ -1314,5 +1313,23 @@ namespace QuantConnect
         {
             return string.Join("&", pairs.Select(pair => $"{pair.Key}={pair.Value}"));
         }
+        
+        /// <summary>
+        /// Safely remove ending
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="ending"></param>
+        /// <returns></returns>
+        public static string RemoveFromEnd(this string s, string ending)
+        {
+            if (s.EndsWith(ending))
+            {
+                return s.Substring(0, s.Length - ending.Length);
+            }
+            else
+            {
+                return s;
+            }
+        }        
     }
 }
