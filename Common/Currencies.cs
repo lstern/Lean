@@ -69,7 +69,13 @@ namespace QuantConnect
             "LTCBTC",
             "ETHBTC",
             "EOSBTC",
-            "EOSETH"
+            "EOSETH",
+
+            //binance
+            "BTCUSDT",
+            "BCHUSDT",
+            "LTCUSDT",
+            "ETHUSDT"
         };
 
         /// <summary>
@@ -325,7 +331,8 @@ namespace QuantConnect
             {"LTC", "Ł"},
             {"ETH", "Ξ"},
 
-            {"EOS", "EOS"}
+            {"EOS", "EOS"},
+            {"USDT", "USDT"}
         };
 
         /// <summary>

@@ -180,6 +180,10 @@
     <Compile Include="Algorithm\Framework\Portfolio\PortfolioTargetCollectionTests.cs" />
     <Compile Include="Algorithm\Framework\Portfolio\EqualWeightingPortfolioConstructionModelTests.cs" />
     <Compile Include="Algorithm\Framework\Portfolio\PortfolioTargetTests.cs" />
+    <Compile Include="Brokerages\Binance\BinanceBrokerageHistoryProviderTests.cs" />
+    <Compile Include="Brokerages\Binance\BinanceBrokerageTests.cs" />
+    <Compile Include="Brokerages\Binance\BinanceFeeModelTests.cs" />
+    <Compile Include="Brokerages\Binance\BinanceSymbolMapperTests.cs" />
     <Compile Include="Brokerages\Bitfinex\BitfinexFeeModelTests.cs" />
     <Compile Include="Brokerages\Bitfinex\BitfinexSymbolMapperTests.cs" />
     <Compile Include="Brokerages\Bitfinex\BitfinexBrokerageHistoryProviderTests.cs" />
@@ -205,6 +209,7 @@
     <Compile Include="Common\Orders\Fills\BackwardsCompatibilityFillModelsTests.cs" />
     <Compile Include="Common\Securities\CashAmountTests.cs" />
     <Compile Include="Common\Data\Custom\QuandlTests.cs" />
+    <Compile Include="Common\Securities\Cryptos\CryptoTests.cs" />
     <Compile Include="Common\Securities\ErrorCurrencyConverterTests.cs" />
     <Compile Include="Common\Securities\IdentityCurrencyConverterTests.cs" />
     <Compile Include="Common\Securities\AccountCurrencyImmediateSettlementModelTests.cs" />

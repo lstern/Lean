@@ -15,7 +15,7 @@
 
 using System;
 
-namespace QuantConnect.Brokerages.GDAX
+namespace QuantConnect.Brokerages
 {
     /// <summary>
     /// Event arguments class for the <see cref="OrderBook.BestBidAskUpdated"/> event

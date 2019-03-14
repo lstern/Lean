@@ -265,6 +265,13 @@
     <Compile Include="Backtesting\BasicOptionAssignmentSimulation.cs" />
     <Compile Include="Backtesting\IBacktestingMarketSimulation.cs" />
     <Compile Include="BaseWebsocketsBrokerage.cs" />
+    <Compile Include="Binance\BinanceBrokerage.Utility.cs" />
+    <Compile Include="Binance\BinanceBrokerage.cs" />
+    <Compile Include="Binance\BinanceBrokerageFactory.cs" />
+    <Compile Include="Binance\BinanceOrderBook.cs" />
+    <Compile Include="Binance\BinanceSymbolMapper.cs" />
+    <Compile Include="Binance\Messages.cs" />
+    <Compile Include="Binance\BinanceBrokerage.Streaming.cs" />
     <Compile Include="Bitfinex\BestBidAskUpdatedEventArgs.cs" />
     <Compile Include="Bitfinex\BitfinexBrokerage.Messaging.cs" />
     <Compile Include="Bitfinex\BitfinexBrokerage.cs" />
@@ -283,14 +290,14 @@
     <Compile Include="Fxcm\FxcmBrokerageFactory.cs" />
     <Compile Include="Fxcm\FxcmSymbolMapper.cs" />
     <Compile Include="GDAX\AuthenticationToken.cs" />
-    <Compile Include="GDAX\BestBidAskUpdatedEventArgs.cs" />
+    <Compile Include="BestBidAskUpdatedEventArgs.cs" />
     <Compile Include="GDAX\GDAXBrokerage.Utility.cs" />
     <Compile Include="GDAX\GDAXBrokerage.cs" />
     <Compile Include="GDAX\GDAXBrokerageFactory.cs" />
     <Compile Include="GDAX\GDAXDataQueueHandler.cs" />
     <Compile Include="GDAX\GDAXFill.cs" />
     <Compile Include="GDAX\GDAXBrokerage.Messaging.cs" />
-    <Compile Include="GDAX\OrderBook.cs" />
+    <Compile Include="OrderBook.cs" />
     <Compile Include="IWebSocket.cs" />
     <Compile Include="GDAX\Messages.cs" />
     <Compile Include="ApiPriceProvider.cs" />
@@ -640,6 +647,7 @@
     <Compile Include="Tradier\UserProfile.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Binance\BinanceBrokerage.Messaging.cs" />
     <None Include="InteractiveBrokers\IB-symbol-map.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

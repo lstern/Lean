@@ -58,9 +58,8 @@ namespace QuantConnect.Securities.Crypto
             Holdings = new CryptoHolding(this, currencyConverter);
 
             // decompose the symbol into each currency pair
-            string baseCurrencySymbol, quoteCurrencySymbol;
-            Forex.Forex.DecomposeCurrencyPair(config.Symbol.Value, out baseCurrencySymbol, out quoteCurrencySymbol);
-            BaseCurrencySymbol = baseCurrencySymbol;
+            string quoteCurrencySymbol = symbolProperties.QuoteCurrency;
+            BaseCurrencySymbol = config.Symbol.Value.Replace(quoteCurrencySymbol, "");
         }
 
         /// <summary>
@@ -93,9 +92,8 @@ namespace QuantConnect.Securities.Crypto
             Holdings = new CryptoHolding(this, currencyConverter);
 
             // decompose the symbol into each currency pair
-            string baseCurrencySymbol, quoteCurrencySymbol;
-            Forex.Forex.DecomposeCurrencyPair(symbol.Value, out baseCurrencySymbol, out quoteCurrencySymbol);
-            BaseCurrencySymbol = baseCurrencySymbol;
+            string quoteCurrencySymbol = symbolProperties.QuoteCurrency;
+            BaseCurrencySymbol = symbol.Value.Replace(quoteCurrencySymbol, "");
         }
 
         /// <summary>
