@@ -28,7 +28,7 @@ namespace QuantConnect.Data.Market
     public class TradeBar : BaseData, IBaseDataBar
     {
         // scale factor used in QC equity/forex data files
-        private const decimal _scaleFactor = 1/10000m;
+        private const decimal _scaleFactor = 1 / 10000m;
 
         private int _initialized;
         private decimal _open;
@@ -194,6 +194,11 @@ namespace QuantConnect.Data.Market
 
             try
             {
+                if (config.Market == "binance")
+                {
+
+                }
+
                 switch (config.SecurityType)
                 {
                     //Equity File Data Format:
@@ -225,7 +230,7 @@ namespace QuantConnect.Data.Market
             }
 
             // if we couldn't parse it above return a default instance
-            return new TradeBar{Symbol = config.Symbol, Period = config.Increment};
+            return new TradeBar { Symbol = config.Symbol, Period = config.Increment };
         }
 
         /// <summary>
@@ -278,10 +283,10 @@ namespace QuantConnect.Data.Market
                 tradeBar.Time = date.Date.AddMilliseconds(csv[0].ToInt32()).ConvertTo(config.DataTimeZone, config.ExchangeTimeZone);
             }
 
-            tradeBar.Open = csv[1].ToDecimal()*_scaleFactor;
-            tradeBar.High = csv[2].ToDecimal()*_scaleFactor;
-            tradeBar.Low = csv[3].ToDecimal()*_scaleFactor;
-            tradeBar.Close = csv[4].ToDecimal()*_scaleFactor;
+            tradeBar.Open = csv[1].ToDecimal() * _scaleFactor;
+            tradeBar.High = csv[2].ToDecimal() * _scaleFactor;
+            tradeBar.Low = csv[3].ToDecimal() * _scaleFactor;
+            tradeBar.Close = csv[4].ToDecimal() * _scaleFactor;
             tradeBar.Volume = csv[5].ToDecimal();
 
             return tradeBar;
@@ -336,6 +341,11 @@ namespace QuantConnect.Data.Market
             return tradeBar;
         }
 
+        public static T ParseBinance<T>(SubscriptionDataConfig config, string line, DateTime date) where T : TradeBar, new()
+        {
+            return default(T);
+        }
+
         /// <summary>
         /// Parses crypto trade bar data into the specified tradebar type, useful for custom types with OHLCV data deriving from TradeBar
         /// </summary>
@@ -344,7 +354,7 @@ namespace QuantConnect.Data.Market
         /// <param name="line">Line from the data file requested</param>
         /// <param name="date">The base data used to compute the time of the bar since the line specifies a milliseconds since midnight</param>
         public static T ParseCrypto<T>(SubscriptionDataConfig config, string line, DateTime date)
-            where T : TradeBar, new()
+        where T : TradeBar, new()
         {
             var tradeBar = new T
             {
@@ -577,7 +587,7 @@ namespace QuantConnect.Data.Market
             if (fillForward)
             {
                 // zero volume out, since it would skew calculations in volume-based indicators
-                ((TradeBar) clone).Volume = 0;
+                ((TradeBar)clone).Volume = 0;
             }
 
             return clone;

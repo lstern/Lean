@@ -26,7 +26,8 @@ namespace QuantConnect
         /// <summary>
         /// USD currency string
         /// </summary>
-        public static string USD = "USD";
+        public static string USD = "USDT";
+        public static string BTC = "BTC";
 
         /// <summary>
         /// Null currency used when a real one is not required
@@ -41,41 +42,10 @@ namespace QuantConnect
         /// </remarks>
         public static readonly IReadOnlyList<string> CryptoCurrencyPairs = new List<string>
         {
-            //fiat
-            "BTCUSD",
-            "BCHUSD",
-            "LTCUSD",
-            "ETHUSD",
-            "BTCEUR",
-            "BCHEUR",
-            "LTCEUR",
-            "ETHEUR",
-            "BTCJPY",
-            "BCHJPY",
-            "LTCJPY",
-            "ETHJPY",
-            "BTCGBP",
-            "BCHGBP",
-            "LTCGBP",
-            "ETHGBP",
-
-            //bitfinex
-            "EOSUSD",
-            "EOSEUR",
-            "EOSGBP",
-            "EOSJPY",
-
-            //stable coins and alts
-            "LTCBTC",
-            "ETHBTC",
-            "EOSBTC",
-            "EOSETH",
-
             //binance
             "BTCUSDT",
-            "BCHUSDT",
-            "LTCUSDT",
-            "ETHUSDT"
+            "ETHUSDT",
+            "BNBUSDT",
         };
 
         /// <summary>

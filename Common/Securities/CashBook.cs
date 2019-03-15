@@ -80,7 +80,7 @@ namespace QuantConnect.Securities
         public CashBook()
         {
             _currencies = new ConcurrentDictionary<string, Cash>();
-            AccountCurrency = Currencies.USD;
+            AccountCurrency = Currencies.BTC;
         }
 
         /// <summary>

@@ -42,6 +42,9 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                 case FileFormat.Csv:
                     return new TextSubscriptionDataSourceReader(dataCacheProvider, config, date, isLiveMode);
 
+                case FileFormat.Valyria:
+                    return new ValyriaSubscriptionDataSourceReader(dataCacheProvider, config, date, isLiveMode);
+
                 case FileFormat.Collection:
                     return new CollectionSubscriptionDataSourceReader(dataCacheProvider, config, date, isLiveMode);
 
