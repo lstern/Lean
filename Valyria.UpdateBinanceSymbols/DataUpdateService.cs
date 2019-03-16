@@ -1,14 +1,14 @@
 ﻿using Binance.Net;
 using Binance.Net.Objects;
 using MessagePack;
-using QuantConnect;
 using QuantConnect.Data.Market;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Valyria.BinanceTools
 {
@@ -23,10 +23,9 @@ namespace Valyria.BinanceTools
 
         public void UpdateData(DateTime startDate, DateTime endDate, string outputFolder)
         {
-            foreach (var symbol in client.GetExchangeInfo().Data.Symbols)
-            {
-                UpdateMarketData(startDate, endDate, $"{outputFolder}/{symbol.Name}", symbol.Name);
-            }
+            Parallel.ForEach(client.GetExchangeInfo().Data.Symbols,
+                new ParallelOptions { MaxDegreeOfParallelism = 3 },
+                symbol => { UpdateMarketData(startDate, endDate, $"{outputFolder}/{symbol.Name}", symbol.Name); });
         }
 
         private void UpdateMarketData(DateTime startDate, DateTime endDate, string outputFolder, string symbol)
@@ -36,14 +35,31 @@ namespace Valyria.BinanceTools
             while (currentDate < endDate)
             {
                 var candles = GetDayKlines(symbol, currentDate);
-                if (candles.Count == 0)
+
+                if (candles.Count > 0)
                 {
-                    Console.WriteLine($"Failed to update {symbol}.");
-                    break;
+                    StoreCandles(symbol, candles, outputFolder);
+                    currentDate = currentDate.AddDays(1);
+                }
+                else
+                {
+                    Console.WriteLine("Skipping date for " + symbol);
+
+                    var klines = client.GetKlines(symbol, KlineInterval.OneMinute, currentDate, endDate, 1);
+                    if (!klines.Success)
+                    {
+                        Console.WriteLine("Failed to retrieve " + symbol);
+                        break;
+                    }
+
+                    if (klines.Data.Length == 0)
+                    {
+                        break;
+                    }
+
+                    currentDate = klines.Data[0].OpenTime.Date;
                 }
 
-                StoreCandles(symbol, candles, outputFolder);
-                currentDate = currentDate.AddDays(1);
             }
         }
 
@@ -65,6 +81,7 @@ namespace Valyria.BinanceTools
 
                 if (candles.Data.Length == 0)
                 {
+                    Thread.Sleep(100);
                     break;
                 }
 
@@ -108,34 +125,17 @@ namespace Valyria.BinanceTools
                 Directory.CreateDirectory(outputFolder);
             }
 
-            var marketFolder = Path.Combine(outputFolder, symbol);
-
-            if (!Directory.Exists(marketFolder))
-            {
-                Directory.CreateDirectory(marketFolder);
-            }
-
-            var lastStoredDate = Directory.GetFiles(marketFolder).OrderByDescending(c => c).FirstOrDefault();
+            var lastStoredDate = Directory.GetFiles(outputFolder).OrderByDescending(c => c).FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(lastStoredDate))
             {
                 return startDate;
             }
 
-            var parts = lastStoredDate.Split('_');
+            var parts = lastStoredDate.Split('\\').Last().Split('_');
 
-            var date = DateTime.ParseExact(parts[2].Split('.')[0], "yyyyMMdd", CultureInfo.InvariantCulture);
+            var date = DateTime.ParseExact(parts[0], "yyyyMMdd", CultureInfo.InvariantCulture);
             return date;
         }
-    }
-
-    public class Candle
-    {
-        public DateTime Time { get; set; }
-        public decimal Open { get; set; }
-        public decimal High { get; set; }
-        public decimal Low { get; set; }
-        public decimal Close { get; set; }
-        public decimal Volume { get; set; }
     }
 }

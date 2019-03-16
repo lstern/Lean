@@ -25,6 +25,9 @@ using QuantConnect.Util;
 using System.Runtime.Caching;
 using QuantConnect.Data.Fundamental;
 using QuantConnect.Data.UniverseSelection;
+using MessagePack;
+using QuantConnect.Data.Market;
+using System.IO;
 
 namespace QuantConnect.Lean.Engine.DataFeeds
 {
@@ -43,7 +46,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         private readonly IDataCacheProvider _dataCacheProvider;
         private static readonly MemoryCache BaseDataSourceCache = new MemoryCache("BaseDataSourceCache",
             // Cache can use up to 70% of the installed physical memory
-            new NameValueCollection{ { "physicalMemoryLimitPercentage", "70"} });
+            new NameValueCollection { { "physicalMemoryLimitPercentage", "70" } });
         private static readonly CacheItemPolicy CachePolicy = new CacheItemPolicy
         {
             // Cache entry should be evicted if it has not been accessed in given span of time:
@@ -82,9 +85,26 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             _date = date;
             _config = config;
             _isLiveMode = isLiveMode;
-            _factory = (BaseData) ObjectActivator.GetActivator(config.Type).Invoke(new object[] { config.Type });
+            _factory = (BaseData)ObjectActivator.GetActivator(config.Type).Invoke(new object[] { config.Type });
             _shouldCacheDataPoints = !_config.IsCustomData && _config.Resolution >= Resolution.Hour
                 && _config.Type != typeof(FineFundamental) && _config.Type != typeof(CoarseFundamental);
+        }
+
+        private BaseData ConverToTradeBar(Candle candle)
+        {
+            var tradeBar = new TradeBar
+            {
+                Symbol = _config.Symbol,
+                Period = _config.Increment,
+                Close = candle.Close,
+                Open = candle.Open,
+                High = candle.High,
+                Low = candle.Low,
+                Volume = candle.Volume,
+                Time = candle.Time
+            };
+
+            return tradeBar;
         }
 
         /// <summary>
@@ -103,41 +123,10 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             if (cacheItem == null)
             {
                 cache = new List<BaseData>();
-                using (var reader = CreateStreamReader(source))
+                using (var reader = new FileStream(source.Source, FileMode.Open, FileAccess.Read))
                 {
-                    // if the reader doesn't have data then we're done with this subscription
-                    if (reader == null || reader.EndOfStream)
-                    {
-                        OnCreateStreamReaderError(_date, source);
-                        yield break;
-                    }
-                    // while the reader has data
-                    while (!reader.EndOfStream)
-                    {
-                        // read a line and pass it to the base data factory
-                        var line = reader.ReadLine();
-                        BaseData instance = null;
-                        try
-                        {
-                            instance = _factory.Reader(_config, line, _date, _isLiveMode);
-                        }
-                        catch (Exception err)
-                        {
-                            OnReaderError(line, err);
-                        }
-
-                        if (instance != null && instance.EndTime != default(DateTime))
-                        {
-                            if (_shouldCacheDataPoints)
-                            {
-                                cache.Add(instance);
-                            }
-                            else
-                            {
-                                yield return instance;
-                            }
-                        }
-                    }
+                    var candles = LZ4MessagePackSerializer.Deserialize<List<Candle>>(reader);
+                    cache = candles.Select(ConverToTradeBar).ToList();
                 }
 
                 if (!_shouldCacheDataPoints)
@@ -166,33 +155,6 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             }
         }
 
-        /// <summary>
-        /// Creates a new <see cref="IStreamReader"/> for the specified <paramref name="subscriptionDataSource"/>
-        /// </summary>
-        /// <param name="subscriptionDataSource">The source to produce an <see cref="IStreamReader"/> for</param>
-        /// <returns>A new instance of <see cref="IStreamReader"/> to read the source, or null if there was an error</returns>
-        private IStreamReader CreateStreamReader(SubscriptionDataSource subscriptionDataSource)
-        {
-            IStreamReader reader;
-            switch (subscriptionDataSource.TransportMedium)
-            {
-                case SubscriptionTransportMedium.LocalFile:
-                    reader = HandleLocalFileSource(subscriptionDataSource);
-                    break;
-
-                case SubscriptionTransportMedium.RemoteFile:
-                    reader = HandleRemoteSourceFile(subscriptionDataSource);
-                    break;
-
-                case SubscriptionTransportMedium.Rest:
-                    reader = new RestSubscriptionStreamReader(subscriptionDataSource.Source, subscriptionDataSource.Headers, _isLiveMode);
-                    break;
-
-                default:
-                    throw new InvalidEnumArgumentException("Unexpected SubscriptionTransportMedium specified: " + subscriptionDataSource.TransportMedium);
-            }
-            return reader;
-        }
 
         /// <summary>
         /// Event invocator for the <see cref="InvalidSource"/> event

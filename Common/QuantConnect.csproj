@@ -221,6 +221,7 @@
     <Compile Include="Data\HistoryProviderBase.cs" />
     <Compile Include="Data\HistoryProviderInitializeParameters.cs" />
     <Compile Include="Data\HistoryRequestFactory.cs" />
+    <Compile Include="Data\Market\Candle.cs" />
     <Compile Include="Data\SubscriptionDataConfigExtensions.cs" />
     <Compile Include="HistoryProviderEvents.cs" />
     <Compile Include="Interfaces\IAccountCurrencyProvider.cs" />

@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Binance.Net" Version="4.0.9" />
     <PackageReference Include="Jil" Version="2.17.0" />
+    <PackageReference Include="MessagePack" Version="1.7.3.4" />
   </ItemGroup>
 
   <ItemGroup>
