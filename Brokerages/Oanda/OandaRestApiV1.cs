@@ -395,7 +395,7 @@ namespace QuantConnect.Brokerages.Oanda
             }
         }
 
-        private IEnumerable<Candle> GetCandles(string oandaSymbol, string startUtc, int barsPerRequest, Resolution resolution, ECandleFormat candleFormat)
+        private IEnumerable<RestV1.DataType.Candle> GetCandles(string oandaSymbol, string startUtc, int barsPerRequest, Resolution resolution, ECandleFormat candleFormat)
         {
             var request = new CandlesRequest
             {
@@ -966,13 +966,13 @@ namespace QuantConnect.Brokerages.Oanda
         /// </summary>
         /// <param name="request">the request data to use when retrieving the candles</param>
         /// <returns>List of Candles received (or empty list)</returns>
-        private IEnumerable<Candle> GetCandles(Request request)
+        private IEnumerable<RestV1.DataType.Candle> GetCandles(Request request)
         {
             var requestString = EndpointResolver.ResolveEndpoint(Environment, Server.Rates) + request.GetRequestString();
 
             var candlesResponse = MakeRequest<CandlesResponse>(requestString);
 
-            var candles = new List<Candle>();
+            var candles = new List<RestV1.DataType.Candle>();
             if (candlesResponse != null)
             {
                 candles.AddRange(candlesResponse.candles);

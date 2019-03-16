@@ -97,7 +97,7 @@ namespace Valyria.BinanceTools
             var candles = klines.Select(ConvertToCandle);
             var day = candles.First().Time.Date.ToString("yyyyMMdd");
 
-            using (var outputFile = File.Create($"{outputFolder}/{day}_quote.valyria"))
+            using (var outputFile = File.Create($"{outputFolder}/{day}_trade.valyria"))
             {
                 LZ4MessagePackSerializer.Serialize(outputFile, candles, MessagePack.Resolvers.ContractlessStandardResolver.Instance);
             }

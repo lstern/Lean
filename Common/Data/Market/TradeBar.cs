@@ -563,7 +563,7 @@ namespace QuantConnect.Data.Market
 
             if (config.Market == "binance")
             {
-                source = source.Replace(".zip", ".lz4");
+                source = source.Replace(".zip", ".valyria");
                 return new SubscriptionDataSource(source, SubscriptionTransportMedium.LocalFile, FileFormat.Valyria);
             }
 

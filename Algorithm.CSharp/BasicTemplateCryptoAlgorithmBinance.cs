@@ -56,6 +56,7 @@ namespace QuantConnect.Algorithm.CSharp
             // When connected to a real brokerage, the amount specified in SetCash
             // will be replaced with the amount in your actual account.
             SetCash("BTC", 1m);
+            SetCash("ETH", 10m);
 
             SetBrokerageModel(BrokerageName.Binance, AccountType.Cash);
 

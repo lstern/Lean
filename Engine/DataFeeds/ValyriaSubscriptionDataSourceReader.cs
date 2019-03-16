@@ -26,8 +26,8 @@ using System.Runtime.Caching;
 using QuantConnect.Data.Fundamental;
 using QuantConnect.Data.UniverseSelection;
 using MessagePack;
-using QuantConnect.Data.Market;
 using System.IO;
+using QuantConnect.Data.Market;
 
 namespace QuantConnect.Lean.Engine.DataFeeds
 {
@@ -90,7 +90,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                 && _config.Type != typeof(FineFundamental) && _config.Type != typeof(CoarseFundamental);
         }
 
-        private BaseData ConverToTradeBar(Candle candle)
+        private BaseData ConverToTradeBar(QuantConnect.Data.Market.Candle candle)
         {
             var tradeBar = new TradeBar
             {
@@ -125,8 +125,13 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                 cache = new List<BaseData>();
                 using (var reader = new FileStream(source.Source, FileMode.Open, FileAccess.Read))
                 {
-                    var candles = LZ4MessagePackSerializer.Deserialize<List<Candle>>(reader);
+                    var candles = LZ4MessagePackSerializer.Deserialize<List<Candle>>(reader, MessagePack.Resolvers.ContractlessStandardResolver.Instance);
                     cache = candles.Select(ConverToTradeBar).ToList();
+                }
+
+                foreach (var item in cache)
+                {
+                    yield return item;
                 }
 
                 if (!_shouldCacheDataPoints)

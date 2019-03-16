@@ -523,6 +523,13 @@ namespace QuantConnect.Data.Market
             }
 
             var source = LeanData.GenerateZipFilePath(Globals.DataFolder, config.Symbol, date, config.Resolution, config.TickType);
+
+            if (config.Market == "binance")
+            {
+                source = source.Replace("quote.zip", "trade.valyria");
+                return new SubscriptionDataSource(source, SubscriptionTransportMedium.LocalFile, FileFormat.Valyria);
+            }
+
             if (config.SecurityType == SecurityType.Option ||
                 config.SecurityType == SecurityType.Future)
             {
