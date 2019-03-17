@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using QuantConnect.Configuration;
 using QuantConnect.Interfaces;
 using QuantConnect.Util;
@@ -25,6 +26,7 @@ namespace QuantConnect.Brokerages.Bitfinex
     /// <summary>
     /// Factory method to create Bitfinex Websockets brokerage
     /// </summary>
+    [Export(typeof(IBrokerageFactory))]
     public class BitfinexBrokerageFactory : BrokerageFactory
     {
         /// <summary>

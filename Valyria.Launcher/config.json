@@ -6,7 +6,7 @@
   // two predefined environments, 'backtesting' and 'live', feel free
   // to add more!
 
-  "environment": "backtesting-desktop", // "live-paper", "backtesting", "live-interactive", "live-interactive-iqfeed"
+  "environment": "backtesting", // "live-paper", "backtesting", "live-interactive", "live-interactive-iqfeed"
 
   // algorithm class selector
   "algorithm-type-name": "BasicTemplateCryptoAlgorithmBinance",
@@ -25,7 +25,7 @@
   //"composer-dll-directory": ".",
 
   // engine
-  "data-folder": "../../../Data/",
+  "data-folder": "D:/Peregrinvs/Lean/Data/",
 
   // handlers
   "log-handler": "QuantConnect.Logging.CompositeLogHandler",
@@ -73,31 +73,6 @@
   "ib-controller-dir": "C:\\IBController",
   "ib-enable-delayed-streaming-data": false,
 
-  // tradier configuration
-  "tradier-account-id": "",
-  "tradier-access-token": "",
-  "tradier-refresh-token": "",
-  "tradier-issued-at": "",
-  "tradier-lifespan": "",
-  "tradier-refresh-session": true,
-
-  // oanda configuration
-  "oanda-environment": "Practice",
-  "oanda-access-token": "",
-  "oanda-account-id": "",
-
-  // fxcm configuration
-  "fxcm-server": "http://www.fxcorporate.com/Hosts.jsp",
-  "fxcm-terminal": "Demo", //Real or Demo
-  "fxcm-user-name": "",
-  "fxcm-password": "",
-  "fxcm-account-id": "",
-
-  // iqfeed configuration
-  "iqfeed-username": "",
-  "iqfeed-password": "",
-  "iqfeed-productName": "",
-  "iqfeed-version": "1.0",
 
   // gdax configuration
   "gdax-api-secret": "",
@@ -165,25 +140,6 @@
       "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler"
     },
 
-    // defines the 'live-tradier' environment
-    "live-tradier": {
-      "live-mode": true,
-
-      // this setting will save tradier access/refresh tokens to a tradier-tokens.txt file
-      // that can be read in next time, this makes it easier to start/stop a tradier algorithm
-      "tradier-save-tokens": true,
-
-      // real brokerage implementations require the BrokerageTransactionHandler
-      "live-mode-brokerage": "TradierBrokerage",
-      "data-queue-handler": "TradierBrokerage",
-
-      "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
-      "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
-      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
-      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
-      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler"
-    },
-
     // defines the 'live-interactive' environment
     "live-interactive": {
       "live-mode": true,
@@ -194,51 +150,6 @@
       "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
       "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
       "data-queue-handler": "QuantConnect.Brokerages.InteractiveBrokers.InteractiveBrokersBrokerage",
-      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
-      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler",
-      "history-provider": "BrokerageHistoryProvider"
-    },
-
-    // defines the 'live-interactive-iqfeed' environment
-    "live-interactive-iqfeed": {
-      "live-mode": true,
-
-      // real brokerage implementations require the BrokerageTransactionHandler
-      "live-mode-brokerage": "InteractiveBrokersBrokerage",
-      "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
-      "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
-      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
-      "data-queue-handler": "QuantConnect.ToolBox.IQFeed.IQFeedDataQueueHandler",
-      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
-      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler",
-      "history-provider": "QuantConnect.ToolBox.IQFeed.IQFeedDataQueueHandler"
-    },
-
-    // defines the 'live-fxcm' environment
-    "live-fxcm": {
-      "live-mode": true,
-
-      // real brokerage implementations require the BrokerageTransactionHandler
-      "live-mode-brokerage": "FxcmBrokerage",
-      "data-queue-handler": "FxcmBrokerage",
-      "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
-      "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
-      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
-      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
-      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler",
-      "history-provider": "BrokerageHistoryProvider"
-    },
-
-    // defines the 'live-oanda' environment
-    "live-oanda": {
-      "live-mode": true,
-
-      // real brokerage implementations require the BrokerageTransactionHandler
-      "live-mode-brokerage": "OandaBrokerage",
-      "data-queue-handler": "OandaBrokerage",
-      "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
-      "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
-      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
       "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
       "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler",
       "history-provider": "BrokerageHistoryProvider"
@@ -320,22 +231,6 @@
       "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
       "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler",
       "history-provider": "BrokerageHistoryProvider"
-    },
-
-    // defines the 'live-alpaca' environment
-    "live-alpaca": {
-      "live-mode": true,
-
-      // real brokerage implementations require the BrokerageTransactionHandler
-      "live-mode-brokerage": "AlpacaBrokerage",
-      "data-queue-handler": "AlpacaBrokerage",
-      "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
-      "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
-      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
-      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
-      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler",
-      "history-provider": "BrokerageHistoryProvider"
     }
-
   }
 }

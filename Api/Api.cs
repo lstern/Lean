@@ -25,12 +25,14 @@ using QuantConnect.Orders;
 using RestSharp;
 using RestSharp.Extensions;
 using QuantConnect.Util;
+using System.ComponentModel.Composition;
 
 namespace QuantConnect.Api
 {
     /// <summary>
     /// QuantConnect.com Interaction Via API.
     /// </summary>
+    [Export(typeof(IApi))]
     public class Api : IApi
     {
         private string _dataFolder;

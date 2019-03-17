@@ -27,6 +27,7 @@ using QuantConnect.Data.Auxiliary;
 using QuantConnect.Data.Consolidators;
 using QuantConnect.Data.Custom;
 using QuantConnect.Data.Market;
+using QuantConnect.Interfaces;
 using QuantConnect.Lean.Engine.DataFeeds;
 using QuantConnect.Securities;
 using QuantConnect.Tests.Engine.DataFeeds;
@@ -221,6 +222,7 @@ namespace QuantConnect.Tests.Algorithm
                     select sub).FirstOrDefault();
         }
 
+        [System.ComponentModel.Composition.Export(typeof(IHistoryProvider))]
         private class TestHistoryProvider : HistoryProviderBase
         {
             public string underlyingSymbol = "GOOG";

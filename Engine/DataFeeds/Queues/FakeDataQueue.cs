@@ -30,6 +30,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds.Queues
     /// <summary>
     /// This is an implementation of <see cref="IDataQueueHandler"/> used for testing
     /// </summary>
+    [System.ComponentModel.Composition.Export(typeof(IDataQueueHandler))]
     public class FakeDataQueue : IDataQueueHandler
     {
         private int count;

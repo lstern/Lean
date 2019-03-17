@@ -37,6 +37,7 @@ namespace QuantConnect.Brokerages.Binance
     /// Binance brokerage implementation
     /// </summary>
     [BrokerageFactory(typeof(BinanceBrokerageFactory))]
+    [System.ComponentModel.Composition.Export(typeof(IDataQueueHandler))]
     public partial class BinanceBrokerage : BaseWebsocketsBrokerage, IDataQueueHandler
     {
         /// <summary>

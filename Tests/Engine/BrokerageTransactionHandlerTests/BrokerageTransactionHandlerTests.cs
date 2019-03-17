@@ -952,6 +952,7 @@ namespace QuantConnect.Tests.Engine.BrokerageTransactionHandlerTests
             Assert.IsTrue(order.Tag.Contains("Warning: fill at stale price"));
         }
 
+        [System.ComponentModel.Composition.Export(typeof(IHistoryProvider))]
         internal class EmptyHistoryProvider : HistoryProviderBase
         {
             public override int DataPointCount => 0;

@@ -23,6 +23,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
     /// <summary>
     /// Default file provider functionality that does not attempt to retrieve any data
     /// </summary>
+    [System.ComponentModel.Composition.Export(typeof(IDataProvider))]
     public class DefaultDataProvider : IDataProvider, IDisposable
     {
         /// <summary>

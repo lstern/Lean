@@ -46,6 +46,7 @@ namespace QuantConnect.Brokerages.InteractiveBrokers
     /// The Interactive Brokers brokerage
     /// </summary>
     [BrokerageFactory(typeof(InteractiveBrokersBrokerageFactory))]
+    [System.ComponentModel.Composition.Export(typeof(IDataQueueHandler))]
     public sealed class InteractiveBrokersBrokerage : Brokerage, IDataQueueHandler, IDataQueueUniverseProvider
     {
         // next valid order id for this client

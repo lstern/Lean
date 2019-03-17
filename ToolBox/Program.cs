@@ -24,8 +24,6 @@ using QuantConnect.ToolBox.BitfinexDownloader;
 using QuantConnect.ToolBox.CoarseUniverseGenerator;
 using QuantConnect.ToolBox.CryptoiqDownloader;
 using QuantConnect.ToolBox.DukascopyDownloader;
-using QuantConnect.ToolBox.FxcmDownloader;
-using QuantConnect.ToolBox.FxcmVolumeDownload;
 using QuantConnect.ToolBox.GDAXDownloader;
 using QuantConnect.ToolBox.GoogleDownloader;
 using QuantConnect.ToolBox.IBDownloader;
@@ -34,7 +32,6 @@ using QuantConnect.ToolBox.IVolatilityEquityConverter;
 using QuantConnect.ToolBox.KaikoDataConverter;
 using QuantConnect.ToolBox.KrakenDownloader;
 using QuantConnect.ToolBox.NseMarketDataConverter;
-using QuantConnect.ToolBox.OandaDownloader;
 using QuantConnect.ToolBox.QuandlBitfinexDownloader;
 using QuantConnect.ToolBox.QuantQuoteConverter;
 using QuantConnect.ToolBox.RandomDataGenerator;
@@ -78,14 +75,6 @@ namespace QuantConnect.ToolBox
                     case "dukascopydownloader":
                         DukascopyDownloaderProgram.DukascopyDownloader(tickers, resolution, fromDate, toDate);
                         break;
-                    case "fdl":
-                    case "fxcmdownloader":
-                        FxcmDownloaderProgram.FxcmDownloader(tickers, resolution, fromDate, toDate);
-                        break;
-                    case "fvdl":
-                    case "fxcmvolumedownload":
-                        FxcmVolumeDownloadProgram.FxcmVolumeDownload(tickers, resolution, fromDate, toDate);
-                        break;
                     case "gdl":
                     case "googledownloader":
                         GoogleDownloaderProgram.GoogleDownloader(tickers, resolution, fromDate, toDate);
@@ -101,10 +90,6 @@ namespace QuantConnect.ToolBox
                     case "kdl":
                     case "krakendownloader":
                         KrakenDownloaderProgram.KrakenDownloader(tickers, resolution, fromDate, toDate);
-                        break;
-                    case "odl":
-                    case "oandadownloader":
-                        OandaDownloaderProgram.OandaDownloader(tickers, resolution, fromDate, toDate);
                         break;
                     case "qbdl":
                     case "quandlbitfinexdownloader":

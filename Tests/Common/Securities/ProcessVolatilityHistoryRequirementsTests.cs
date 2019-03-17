@@ -21,6 +21,7 @@ using NodaTime;
 using NUnit.Framework;
 using QuantConnect.Data;
 using QuantConnect.Data.Market;
+using QuantConnect.Interfaces;
 using QuantConnect.Lean.Engine;
 using QuantConnect.Securities;
 using QuantConnect.Securities.Volatility;
@@ -82,6 +83,7 @@ namespace QuantConnect.Tests.Common.Securities
         }
     }
 
+    [System.ComponentModel.Composition.Export(typeof(IHistoryProvider))]
     internal class TestHistoryProvider : HistoryProviderBase
     {
         public override int DataPointCount { get; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using QuantConnect.Configuration;
 using QuantConnect.Interfaces;
 using QuantConnect.Util;
@@ -10,6 +11,7 @@ namespace QuantConnect.Brokerages.Binance
     /// <summary>
     /// Factory method to create binance Websockets brokerage
     /// </summary>
+    [Export(typeof(IBrokerageFactory))]
     public class BinanceBrokerageFactory : BrokerageFactory
     {
         /// <summary>

@@ -20,6 +20,7 @@ using NodaTime;
 using NUnit.Framework;
 using QuantConnect.Algorithm;
 using QuantConnect.Data;
+using QuantConnect.Interfaces;
 using QuantConnect.Tests.Engine.DataFeeds;
 using HistoryRequest = QuantConnect.Data.HistoryRequest;
 
@@ -104,6 +105,7 @@ namespace QuantConnect.Tests.Algorithm
             Assert.AreEqual(TickType.Trade, _testHistoryProvider.HistryRequests.First().TickType);
         }
 
+        [System.ComponentModel.Composition.Export(typeof(IHistoryProvider))]
         private class TestHistoryProvider : HistoryProviderBase
         {
             public override int DataPointCount { get; }

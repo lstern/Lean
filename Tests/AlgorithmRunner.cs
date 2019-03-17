@@ -197,6 +197,7 @@ namespace QuantConnect.Tests
         /// <summary>
         /// Used to perform checks against history requests for all regression algorithms
         /// </summary>
+        [System.ComponentModel.Composition.Export(typeof(IHistoryProvider))]
         class RegressionHistoryProviderWrapper : SubscriptionDataReaderHistoryProvider
         {
             public override IEnumerable<Slice> GetHistory(IEnumerable<HistoryRequest> requests, DateTimeZone sliceTimeZone)

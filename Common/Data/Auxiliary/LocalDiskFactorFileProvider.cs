@@ -24,6 +24,7 @@ namespace QuantConnect.Data.Auxiliary
     /// <summary>
     /// Provides an implementation of <see cref="IFactorFileProvider"/> that searches the local disk
     /// </summary>
+    [System.ComponentModel.Composition.Export(typeof(IFactorFileProvider))]
     public class LocalDiskFactorFileProvider : IFactorFileProvider
     {
         private readonly IMapFileProvider _mapFileProvider;

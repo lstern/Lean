@@ -30,7 +30,7 @@ namespace QuantConnect.Algorithm.CSharp
     /// <meta name="tag" content="using data" />
     /// <meta name="tag" content="using quantconnect" />
     /// <meta name="tag" content="trading and orders" />
-    public class BasicTemplateCryptoAlgorithmBinance : QCAlgorithm, IRegressionAlgorithmDefinition
+    public class FlashCrash : QCAlgorithm, IRegressionAlgorithmDefinition
     {
         private ExponentialMovingAverage _fast;
         private ExponentialMovingAverage _slow;
@@ -40,23 +40,10 @@ namespace QuantConnect.Algorithm.CSharp
         /// </summary>
         public override void Initialize()
         {
-            SetStartDate(2018, 4, 4); // Set Start Date
-            SetEndDate(2018, 5, 4); // Set End Date
+            SetStartDate(2017, 12, 1); // Set Start Date
+            SetEndDate(2017, 12, 31); // Set End Date
 
-            // Although typically real brokerages as GDAX only support a single account currency,
-            // here we add both USD and EUR to demonstrate how to handle non-USD account currencies.
-            // Set Strategy Cash (USD)
-            // SetCash(10000);
-
-            // Set Strategy Cash (EUR)
-            // EUR/USD conversion rate will be updated dynamically
-            SetCash("USDT", 10000);
-
-            // Add some coins as initial holdings
-            // When connected to a real brokerage, the amount specified in SetCash
-            // will be replaced with the amount in your actual account.
-            SetCash("BTC", 1m);
-            SetCash("ETH", 10m);
+            SetCash("BTC", 1);
 
             SetBrokerageModel(BrokerageName.Binance, AccountType.Cash);
 

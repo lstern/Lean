@@ -19,14 +19,12 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using QuantConnect.Api;
 using QuantConnect.API;
-using QuantConnect.Data.Market;
 
 namespace QuantConnect.Interfaces
 {
     /// <summary>
     /// API for QuantConnect.com
     /// </summary>
-    [InheritedExport(typeof(IApi))]
     public interface IApi : IDisposable
     {
         /// <summary>

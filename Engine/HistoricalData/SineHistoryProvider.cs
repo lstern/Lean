@@ -17,6 +17,7 @@ using NodaTime;
 using QuantConnect.Data;
 using QuantConnect.Data.Market;
 using QuantConnect.Data.UniverseSelection;
+using QuantConnect.Interfaces;
 using QuantConnect.Lean.Engine.DataFeeds;
 using QuantConnect.Securities;
 using System;
@@ -29,6 +30,7 @@ namespace QuantConnect.Lean.Engine.HistoricalData
     /// <summary>
     /// Implements a History provider that always return a IEnumerable of Slice with prices following a sine function
     /// </summary>
+    [System.ComponentModel.Composition.Export(typeof(IHistoryProvider))]
     public class SineHistoryProvider : HistoryProviderBase
     {
         private readonly SecurityChanges _securityChanges = SecurityChanges.None;

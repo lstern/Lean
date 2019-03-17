@@ -21,12 +21,14 @@ using QuantConnect.Packets;
 using QuantConnect.Util;
 using QuantConnect.Logging;
 using Newtonsoft.Json;
+using System.ComponentModel.Composition;
 
 namespace QuantConnect.Brokerages.InteractiveBrokers
 {
     /// <summary>
     /// Factory type for the <see cref="InteractiveBrokersBrokerage"/>
     /// </summary>
+    [Export(typeof(IBrokerageFactory))]
     public class InteractiveBrokersBrokerageFactory : BrokerageFactory
     {
         /// <summary>

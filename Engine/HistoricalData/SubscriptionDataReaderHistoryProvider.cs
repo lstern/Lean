@@ -36,6 +36,7 @@ namespace QuantConnect.Lean.Engine.HistoricalData
     /// Provides an implementation of <see cref="IHistoryProvider"/> that uses <see cref="BaseData"/>
     /// instances to retrieve historical data
     /// </summary>
+    [System.ComponentModel.Composition.Export(typeof(IHistoryProvider))]
     public class SubscriptionDataReaderHistoryProvider : SynchronizingHistoryProvider
     {
         private IMapFileProvider _mapFileProvider;

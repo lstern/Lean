@@ -4,13 +4,13 @@ using QuantConnect.Configuration;
 using QuantConnect.Interfaces;
 using QuantConnect.Logging;
 using QuantConnect.Util;
-using QuantConnect.Securities;
 
 namespace QuantConnect.Lean.Engine.DataFeeds
 {
     /// <summary>
     /// An instance of the <see cref="IDataProvider"/> that will attempt to retrieve files not present on the filesystem from the API
     /// </summary>
+    [System.ComponentModel.Composition.Export(typeof(IDataProvider))]
     public class ApiDataProvider : IDataProvider
     {
         private readonly int _uid = Config.GetInt("job-user-id", 0);
@@ -49,8 +49,8 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             if (LeanData.TryParsePath(key, out symbol, out date, out resolution))
             {
                 Log.Trace("ApiDataProvider.Fetch(): Attempting to get data from QuantConnect.com's data library for symbol({0}), resolution({1}) and date({2}).",
-                    symbol.Value, 
-                    resolution, 
+                    symbol.Value,
+                    resolution,
                     date.Date.ToShortDateString());
 
                 var downloadSuccessful = _api.DownloadData(symbol, resolution, date);
@@ -58,8 +58,8 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                 if (downloadSuccessful)
                 {
                     Log.Trace("ApiDataProvider.Fetch(): Successfully retrieved data for symbol({0}), resolution({1}) and date({2}).",
-                        symbol.Value, 
-                        resolution, 
+                        symbol.Value,
+                        resolution,
                         date.Date.ToShortDateString());
 
                     return new FileStream(key, FileMode.Open, FileAccess.Read);

@@ -14,6 +14,7 @@
 */
 
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using QuantConnect.Interfaces;
 using QuantConnect.Packets;
 
@@ -22,6 +23,7 @@ namespace QuantConnect.Brokerages.Paper
     /// <summary>
     /// The factory type for the <see cref="PaperBrokerage"/>
     /// </summary>
+    [Export(typeof(IBrokerageFactory))]
     public class PaperBrokerageFactory : BrokerageFactory
     {
         /// <summary>

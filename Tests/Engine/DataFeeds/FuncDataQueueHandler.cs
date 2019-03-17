@@ -27,6 +27,7 @@ namespace QuantConnect.Tests.Engine.DataFeeds
     /// Provides an implementation of <see cref="IDataQueueHandler"/> that can be specified
     /// via a function
     /// </summary>
+    [System.ComponentModel.Composition.Export(typeof(IDataQueueHandler))]
     public class FuncDataQueueHandler : IDataQueueHandler
     {
         private readonly object _lock = new object();

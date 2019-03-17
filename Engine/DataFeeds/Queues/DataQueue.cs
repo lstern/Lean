@@ -24,6 +24,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds.Queues
     /// <summary>
     /// Live Data Queue is the cut out implementation of how to bind a custom live data source 
     /// </summary>
+    [System.ComponentModel.Composition.Export(typeof(IDataQueueHandler))]
     public class LiveDataQueue : IDataQueueHandler
     {
         /// <summary>
