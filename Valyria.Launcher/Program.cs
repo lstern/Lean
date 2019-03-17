@@ -28,12 +28,6 @@ namespace Valyria.Launcher
 
         static void Main(string[] args)
         {
-            //Initialize:
-            var mode = "RELEASE";
-#if DEBUG
-            mode = "DEBUG";
-#endif
-
             if (OS.IsWindows)
             {
                 Console.OutputEncoding = System.Text.Encoding.Unicode;
@@ -52,7 +46,7 @@ namespace Valyria.Launcher
 
             //Name thread for the profiler:
             Thread.CurrentThread.Name = "Algorithm Analysis Thread";
-            Log.Trace($"Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v{Globals.Version} Mode: {mode} (" + (Environment.Is64BitProcess ? "64" : "32") + "bit)");
+            Log.Trace($"Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v{Globals.Version} (" + (Environment.Is64BitProcess ? "64" : "32") + "bit)");
             Log.Trace($"Engine.Main(): Started {DateTime.Now.ToShortTimeString()}");
 
             //Import external libraries specific to physical server location (cloud/local)
