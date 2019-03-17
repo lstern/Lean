@@ -18,8 +18,8 @@ namespace Valyria.Launcher
 
         static void Main(string[] args)
         {
-            var trader = new Trader();
-            trader.Initialize(args);
+            var trader = new Trader(args);
+
             var job = trader.LoadJob();
 
             try
