@@ -107,12 +107,10 @@ namespace QuantConnect.Lean.Engine.Setup
         /// <returns>A new instance of IAlgorithm, or throws an exception if there was an error</returns>
         public virtual IAlgorithm CreateAlgorithmInstance(AlgorithmNodePacket algorithmNodePacket, string assemblyPath)
         {
-            string error;
-            IAlgorithm algorithm;
 
             // limit load times to 60 seconds and force the assembly to have exactly one derived type
             var loader = new Loader(algorithmNodePacket.Language, TimeSpan.FromSeconds(60), names => names.SingleOrAlgorithmTypeName(Config.Get("algorithm-type-name")));
-            var complete = loader.TryCreateAlgorithmInstanceWithIsolator(assemblyPath, algorithmNodePacket.RamAllocation, out algorithm, out error);
+            var complete = loader.TryCreateAlgorithmInstanceWithIsolator(assemblyPath, algorithmNodePacket.RamAllocation, out IAlgorithm algorithm, out string error);
             if (!complete) throw new AlgorithmSetupException($"During the algorithm initialization, the following exception has occurred: {error}");
 
             return algorithm;

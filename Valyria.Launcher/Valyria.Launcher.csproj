@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.WindowsDesktop.App" Version="3.0.0-preview3-27504-2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="NLog" Version="4.5.11" />
+    <PackageReference Include="QuantConnect.pythonnet" Version="1.0.5.17" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
     <PackageReference Include="System.Runtime.Caching" Version="4.5.0" />
   </ItemGroup>

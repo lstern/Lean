@@ -38,9 +38,12 @@ namespace Valyria.Launcher
         private const string _collapseMessage = "Unhandled exception breaking past controls and causing collapse of algorithm node. This is likely a memory leak of an external dependency or the underlying OS terminating the LEAN engine.";
         private readonly StackExceptionInterpreter _exceptionInterpreter = StackExceptionInterpreter.CreateFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 
-        public Trader(string[] args)
+        public Trader(string[] args = null)
         {
-            this.Initialize(args);
+            if (args != null)
+            {
+                this.Initialize(args);
+            }
         }
 
         public void Initialize(string[] args)
@@ -115,15 +118,13 @@ namespace Valyria.Launcher
             Environment.Exit(0);
         }
 
-        public void RunJob(Job job)
+        public void RunJob(Job job, IAlgorithm algorithm = null)
         {
             AlgorithmNodePacket packet = job.Packet;
             string assemblyPath = job.AssemblyPath;
             bool liveMode = job.LiveMode;
 
             var algorithmManager = new AlgorithmManager(liveMode);
-
-            var algorithm = default(IAlgorithm);
 
             try
             {
@@ -148,8 +149,11 @@ namespace Valyria.Launcher
                 var synchronizer = new Synchronizer();
                 try
                 {
-                    // Save algorithm to cache, load algorithm instance:
-                    algorithm = leanEngineAlgorithmHandlers.Setup.CreateAlgorithmInstance(packet, assemblyPath);
+                    if (algorithm == null)
+                    {
+                        // Save algorithm to cache, load algorithm instance:
+                        algorithm = leanEngineAlgorithmHandlers.Setup.CreateAlgorithmInstance(packet, assemblyPath);
+                    }
 
                     // Set algorithm in ILeanManager
                     leanEngineSystemHandlers.LeanManager.SetAlgorithm(algorithm);
@@ -166,7 +170,7 @@ namespace Valyria.Launcher
                     var securityService = new SecurityService(algorithm.Portfolio.CashBook,
                         marketHoursDatabase,
                         symbolPropertiesDatabase,
-                        (ISecurityInitializerProvider)algorithm);
+                        algorithm);
 
                     algorithm.Securities.SetSecurityService(securityService);
 
@@ -195,7 +199,7 @@ namespace Valyria.Launcher
                         leanEngineAlgorithmHandlers.FactorFileProvider,
                         leanEngineAlgorithmHandlers.DataProvider,
                         dataManager,
-                        (IDataFeedTimeProvider)synchronizer);
+                        synchronizer);
 
                     // set the order processor on the transaction manager (needs to be done before initializing BrokerageHistoryProvider)
                     algorithm.Transactions.SetOrderProcessor(leanEngineAlgorithmHandlers.Transactions);

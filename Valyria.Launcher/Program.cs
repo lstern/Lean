@@ -1,5 +1,7 @@
 ﻿using System;
+using QuantConnect.Algorithm.CSharp;
 using QuantConnect.Logging;
+using Valyria.Launcher.Algs;
 
 namespace Valyria.Launcher
 {
@@ -24,7 +26,19 @@ namespace Valyria.Launcher
 
             try
             {
-                trader.RunJob(job);
+                // trader.RunJob(job);
+                var init = new RunParams()
+                {
+                    StartDate = new DateTime(2018, 4, 4),
+                    EndDate = new DateTime(2018, 5, 4),
+                    InitialBalance = new Balance[] { new Balance { Asset = "BTC", Value = 1m } },
+                    ValidTradingPairs = new[] { "BTCUSDT", "ETHUSDT", "ETHBTC" }
+                };
+
+                var task = new FlashCrash();
+                task.RunParams = init;
+
+                trader.RunJob(job, task);
             }
             finally
             {

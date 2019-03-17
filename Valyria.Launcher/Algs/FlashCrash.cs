@@ -21,8 +21,10 @@ using QuantConnect.Brokerages;
 using QuantConnect.Indicators;
 using QuantConnect.Orders;
 using QuantConnect.Interfaces;
+using QuantConnect.Algorithm;
+using QuantConnect;
 
-namespace QuantConnect.Algorithm.CSharp
+namespace Valyria.Launcher.Algs
 {
     /// <summary>
     /// The demonstration algorithm shows some of the most common order methods when working with Crypto assets.
@@ -35,33 +37,28 @@ namespace QuantConnect.Algorithm.CSharp
         private ExponentialMovingAverage _fast;
         private ExponentialMovingAverage _slow;
 
+        public RunParams RunParams { get; set; }
+
         /// <summary>
         /// Initialise the data and resolution required, as well as the cash and start-end dates for your algorithm. All algorithms must initialized.
         /// </summary>
         public override void Initialize()
         {
-            SetStartDate(2017, 12, 1); // Set Start Date
-            SetEndDate(2017, 12, 31); // Set End Date
-
-            SetCash("BTC", 1);
-
             SetBrokerageModel(BrokerageName.Binance, AccountType.Cash);
 
-            // You can uncomment the following line when live trading with GDAX,
-            // to ensure limit orders will only be posted to the order book and never executed as a taker (incurring fees).
-            // Please note this statement has no effect in backtesting or paper trading.
-            // DefaultOrderProperties = new GDAXOrderProperties { PostOnly = true };
+            SetStartDate(RunParams.StartDate); 
+            SetEndDate(RunParams.EndDate);
 
-            // Find more symbols here: http://quantconnect.com/data
-            AddCrypto("BTCUSDT");
-            AddCrypto("ETHUSDT");
-            AddCrypto("ETHBTC");
+            foreach (var balance in RunParams.InitialBalance)
+            {
+                SetCash(balance.Asset, balance.Value);
+            }
 
-            var symbol = AddCrypto("ETHUSDT").Symbol;
-
-            // create two moving averages
-            _fast = EMA(symbol, 30, Resolution.Minute);
-            _slow = EMA(symbol, 60, Resolution.Minute);
+            foreach (var pair in RunParams.ValidTradingPairs)
+            {
+                AddCrypto(pair);
+            }
+            
         }
 
         /// <summary>
@@ -70,18 +67,6 @@ namespace QuantConnect.Algorithm.CSharp
         /// <param name="data">Slice object keyed by symbol containing the stock data</param>
         public override void OnData(Slice data)
         {
-            //if (Portfolio.CashBook["EUR"].ConversionRate == 0
-            //    || Portfolio.CashBook["BTC"].ConversionRate == 0
-            //    || Portfolio.CashBook["ETH"].ConversionRate == 0
-            //    || Portfolio.CashBook["LTC"].ConversionRate == 0)
-            //{
-            //    Log($"EUR conversion rate: {Portfolio.CashBook["EUR"].ConversionRate}");
-            //    Log($"BTC conversion rate: {Portfolio.CashBook["BTC"].ConversionRate}");
-            //    Log($"LTC conversion rate: {Portfolio.CashBook["LTC"].ConversionRate}");
-            //    Log($"ETH conversion rate: {Portfolio.CashBook["ETH"].ConversionRate}");
-
-            //    throw new Exception("Conversion rate is 0");
-            //}
             if (Time.Hour == 1 && Time.Minute == 0)
             {
                 // Sell all ETH holdings with a limit order at 1% above the current price
@@ -129,13 +114,10 @@ namespace QuantConnect.Algorithm.CSharp
 
         public override void OnOrderEvent(OrderEvent orderEvent)
         {
-            Debug(Time + " " + orderEvent);
         }
 
         public override void OnEndOfAlgorithm()
         {
-            Log($"{Time} - TotalPortfolioValue: {Portfolio.TotalPortfolioValue}");
-            Log($"{Time} - CashBook: {Portfolio.CashBook}");
         }
 
         /// <summary>
