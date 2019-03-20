@@ -1,21 +1,5 @@
-/*
- * QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
- * Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using QuantConnect.Data;
 using QuantConnect.Brokerages;
 using QuantConnect.Indicators;
@@ -23,21 +7,54 @@ using QuantConnect.Orders;
 using QuantConnect.Interfaces;
 using QuantConnect.Algorithm;
 using QuantConnect;
+using QuantConnect.Data.Market;
+using QuantConnect.Data.Consolidators;
+using QuantConnect.Securities.Crypto;
 
 namespace Valyria.Launcher.Algs
 {
-    /// <summary>
-    /// The demonstration algorithm shows some of the most common order methods when working with Crypto assets.
-    /// </summary>
-    /// <meta name="tag" content="using data" />
-    /// <meta name="tag" content="using quantconnect" />
-    /// <meta name="tag" content="trading and orders" />
+    public class FlashCrashIndicators
+    {
+        public DropRate DropRate { get; set; }
+    }
+
+    public class FlashCrashRunParams : RunParams
+    {
+
+    }
+
     public class FlashCrash : QCAlgorithm, IRegressionAlgorithmDefinition
     {
-        private ExponentialMovingAverage _fast;
-        private ExponentialMovingAverage _slow;
-
         public RunParams RunParams { get; set; }
+
+        public Dictionary<string, Crypto> TradingPairs = new Dictionary<string, Crypto>();
+        private Dictionary<string, FlashCrashIndicators> Indicators = new Dictionary<string, FlashCrashIndicators>();
+
+
+        public DropRate DR(Symbol symbol, int period, Resolution? resolution = null,
+                                    Func<IBaseData, decimal> selector = null)
+        {
+            var name = CreateIndicatorName(symbol, "DR" + period, resolution);
+            var dropRate = new DropRate(name, period);
+            RegisterIndicator(symbol, dropRate, ResolveConsolidator(symbol, resolution), selector);
+            return dropRate;
+        }
+
+        public void RegisterIndicator(Symbol symbol, IndicatorBase<TradeBar> indicator, IDataConsolidator consolidator, Func<IBaseData, decimal> selector = null)
+        {
+            // default our selector to the Value property on BaseData
+            selector ??= (x => x.Value);
+
+            // register the consolidator for automatic updates via SubscriptionManager
+            SubscriptionManager.AddConsolidator(symbol, consolidator);
+
+            // attach to the DataConsolidated event so it updates our indicator
+            consolidator.DataConsolidated += (sender, consolidated) =>
+            {
+                var value = selector(consolidated);
+                indicator.Update(new TradeBar(consolidated as TradeBar));
+            };
+        }
 
         /// <summary>
         /// Initialise the data and resolution required, as well as the cash and start-end dates for your algorithm. All algorithms must initialized.
@@ -46,8 +63,11 @@ namespace Valyria.Launcher.Algs
         {
             SetBrokerageModel(BrokerageName.Binance, AccountType.Cash);
 
-            SetStartDate(RunParams.StartDate); 
-            SetEndDate(RunParams.EndDate);
+            //SetStartDate(RunParams.StartDate);
+            //if (RunParams.EndDate.HasValue)
+            //{
+            //    SetEndDate(RunParams.EndDate.Value);
+            //}
 
             foreach (var balance in RunParams.InitialBalance)
             {
@@ -56,9 +76,21 @@ namespace Valyria.Launcher.Algs
 
             foreach (var pair in RunParams.ValidTradingPairs)
             {
-                AddCrypto(pair);
+                var crypto = AddCrypto(pair);
+                TradingPairs[pair] = crypto;
+
+                var indicator = new FlashCrashIndicators
+                {
+                    DropRate = DR(crypto.Symbol, 5, Resolution.Minute)
+                };
+
+                Indicators[pair] = indicator;
             }
-            
+        }
+
+        private void ProcessData(TradeBar data)
+        {
+            // data..
         }
 
         /// <summary>
@@ -67,48 +99,9 @@ namespace Valyria.Launcher.Algs
         /// <param name="data">Slice object keyed by symbol containing the stock data</param>
         public override void OnData(Slice data)
         {
-            if (Time.Hour == 1 && Time.Minute == 0)
+            foreach (var entry in data)
             {
-                // Sell all ETH holdings with a limit order at 1% above the current price
-                var limitPrice = Math.Round(Securities["ETHUSDT"].Price * 1.01m, 2);
-                var quantity = Portfolio.CashBook["ETH"].Amount;
-                LimitOrder("ETHUSDT", -quantity, limitPrice);
-            }
-            else if (Time.Hour == 2 && Time.Minute == 0)
-            {
-                // Submit a buy limit order for BTC at 5% below the current price
-                var usdTotal = Portfolio.CashBook["USDT"].Amount;
-                var limitPrice = Math.Round(Securities["BTCUSDT"].Price * 0.95m, 2);
-                // use only half of our total USD
-                var quantity = usdTotal * 0.5m / limitPrice;
-                LimitOrder("BTCUSDT", quantity, limitPrice);
-            }
-            else if (Time.Hour == 2 && Time.Minute == 1)
-            {
-                // Get current USD available, subtracting amount reserved for buy open orders
-                var usdTotal = Portfolio.CashBook["USDT"].Amount;
-                var usdReserved = Transactions.GetOpenOrders(x => x.Direction == OrderDirection.Buy && x.Type == OrderType.Limit)
-                    .Where(x => x.Symbol == "BTCUSDT" || x.Symbol == "ETHUSDT")
-                    .Sum(x => x.Quantity * ((LimitOrder) x).LimitPrice);
-                var usdAvailable = usdTotal - usdReserved;
-
-                // Submit a marketable buy limit order for ETH at 1% above the current price
-                var limitPrice = Math.Round(Securities["ETHUSDT"].Price * 1.01m, 2);
-
-                // use all of our available USD
-                var quantity = usdAvailable / limitPrice;
-
-                // this order will be rejected for insufficient funds
-                LimitOrder("ETHUSDT", quantity, limitPrice);
-
-                // use only half of our available USD
-                quantity = usdAvailable * 0.5m / limitPrice;
-                LimitOrder("ETHUSDT", quantity, limitPrice);
-            }
-            else if (Time.Hour == 11 && Time.Minute == 0)
-            {
-                // Liquidate our BTC holdings (including the initial holding)
-                SetHoldings("BTCUSDT", 0m);
+                ProcessData(entry.Value as TradeBar);
             }
         }
 

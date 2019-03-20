@@ -6,7 +6,7 @@ namespace Valyria.Launcher.Algs
     public class RunParams
     {
         public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public IEnumerable<Balance> InitialBalance { get; set; }
         public IEnumerable<string> ValidTradingPairs { get; set; }
     }

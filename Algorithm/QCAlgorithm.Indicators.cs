@@ -348,7 +348,6 @@ namespace QuantConnect.Algorithm
             return dpo;
         }
 
-
         /// <summary>
         /// Creates an ExponentialMovingAverage indicator for the symbol. The indicator will be automatically
         /// updated on the given resolution.
@@ -1397,6 +1396,22 @@ namespace QuantConnect.Algorithm
             {
                 var value = selector(consolidated);
                 indicator.Update(new IndicatorDataPoint(consolidated.Symbol, consolidated.EndTime, value));
+            };
+        }
+
+        public void RegisterIndicator(Symbol symbol, IndicatorBase<TradeBar> indicator, IDataConsolidator consolidator, Func<IBaseData, decimal> selector = null)
+        {
+            // default our selector to the Value property on BaseData
+            selector = selector ?? (x => x.Value);
+
+            // register the consolidator for automatic updates via SubscriptionManager
+            SubscriptionManager.AddConsolidator(symbol, consolidator);
+
+            // attach to the DataConsolidated event so it updates our indicator
+            consolidator.DataConsolidated += (sender, consolidated) =>
+            {
+                var value = selector(consolidated);
+                indicator.Update(new TradeBar(consolidated as TradeBar));
             };
         }
 

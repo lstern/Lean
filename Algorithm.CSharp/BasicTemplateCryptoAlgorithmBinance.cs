@@ -66,7 +66,7 @@ namespace QuantConnect.Algorithm.CSharp
             // DefaultOrderProperties = new GDAXOrderProperties { PostOnly = true };
 
             // Find more symbols here: http://quantconnect.com/data
-            AddCrypto("BTCUSDT");
+            AddCrypto("BTCUSDT", resolution: Resolution.Second);
             AddCrypto("ETHUSDT");
             AddCrypto("ETHBTC");
 

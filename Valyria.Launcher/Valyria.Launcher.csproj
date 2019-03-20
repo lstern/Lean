@@ -13,7 +13,9 @@
     <PackageReference Include="NLog" Version="4.5.11" />
     <PackageReference Include="QuantConnect.pythonnet" Version="1.0.5.17" />
     <PackageReference Include="System.ComponentModel.Composition" Version="4.5.0" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="4.5.0" />
     <PackageReference Include="System.Runtime.Caching" Version="4.5.0" />
+    <PackageReference Include="WebSocket4Net" Version="0.15.2" />
   </ItemGroup>
 
   <ItemGroup>
