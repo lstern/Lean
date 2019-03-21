@@ -6,7 +6,7 @@
   // two predefined environments, 'backtesting' and 'live', feel free
   // to add more!
 
-  "environment": "backtesting-desktop", // "live-paper", "backtesting", "live-interactive", "live-interactive-iqfeed"
+  "environment": "paper-binance", // "live-paper", "backtesting", "live-interactive", "live-interactive-iqfeed"
 
   // algorithm class selector
   "algorithm-type-name": "BasicTemplateCryptoAlgorithmBinance",
@@ -100,17 +100,17 @@
   "iqfeed-version": "1.0",
 
   // gdax configuration
-  "gdax-api-secret": "",
-  "gdax-api-key": "",
-  "gdax-passphrase": "",
+  "gdax-api-secret": "abvc",
+  "gdax-api-key": "123",
+  "gdax-passphrase": "111",
 
   // bitfinex configuration
   "bitfinex-api-secret": "",
   "bitfinex-api-key": "",
 
   // binance configuration
-  "binance-api-secret": "",
-  "binance-api-key": "",
+  "binance-api-secret": "Er3hlC6PzHqaCLLcmFGauFusaAObXYTw6CFYNiqMClmwBu2QtDbbf70FSPlvQ9YB",
+  "binance-api-key": "Ie2zaf3UU2zzDwyIQMHBFrluGpcXCFziaXh8CT0t5piYwo3RtoSBWUCgXN4RnXA4",
 
   // Required to access data from Quandl
   // To get your access token go to https://www.quandl.com/account/api
@@ -164,6 +164,35 @@
       "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
       "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler"
     },
+
+    "paper-gdax": {
+      "live-mode": true,
+
+      // real brokerage implementations require the BrokerageTransactionHandler
+      "live-mode-brokerage": "PaperBrokerage",
+      "data-queue-handler": "GDAXDataQueueHandler",
+      "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
+      "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
+      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
+      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
+      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler",
+      "history-provider": "BrokerageHistoryProvider"
+    },
+
+    "paper-binance": {
+      "live-mode": true,
+
+      // real brokerage implementations require the BrokerageTransactionHandler
+      "live-mode-brokerage": "PaperBrokerage",
+      "data-queue-handler": "BinanceBrokerage",
+      "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
+      "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
+      "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
+      "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
+      "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler",
+      "history-provider": "BrokerageHistoryProvider"
+    },
+
 
     // defines the 'live-tradier' environment
     "live-tradier": {
@@ -281,7 +310,7 @@
     },
 
     "live-gdax": {
-      "live-mode": true,
+      "live-mode": false,
 
       // real brokerage implementations require the BrokerageTransactionHandler
       "live-mode-brokerage": "GDAXBrokerage",

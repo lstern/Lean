@@ -1,7 +1,8 @@
 ﻿using QuantConnect.Data.Market;
+using QuantConnect.Indicators;
 using System.Linq;
 
-namespace QuantConnect.Indicators
+namespace Valyria.Indicators
 {
     /// <summary>
     /// This indicator computes the Drop Rate (DR). 

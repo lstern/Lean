@@ -27,7 +27,7 @@ namespace Valyria.Launcher
             try
             {
                 // trader.RunJob(job);
-                var init = new RunParams()
+                var init = new FlashCrashRunParams()
                 {
                     StartDate = new DateTime(2018, 4, 4),
                     EndDate = new DateTime(2018, 5, 4),
@@ -35,7 +35,7 @@ namespace Valyria.Launcher
                     ValidTradingPairs = new[] { "BTCUSDT", "ETHUSDT", "ETHBTC" }
                 };
 
-                var task = new FlashCrash();
+                var task = new FlashCrashAlgorithm();
                 task.RunParams = init;
 
                 trader.RunJob(job, task);

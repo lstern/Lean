@@ -1,60 +1,42 @@
-using System;
 using System.Collections.Generic;
 using QuantConnect.Data;
 using QuantConnect.Brokerages;
-using QuantConnect.Indicators;
 using QuantConnect.Orders;
 using QuantConnect.Interfaces;
-using QuantConnect.Algorithm;
 using QuantConnect;
 using QuantConnect.Data.Market;
-using QuantConnect.Data.Consolidators;
 using QuantConnect.Securities.Crypto;
 
 namespace Valyria.Launcher.Algs
 {
     public class FlashCrashIndicators
     {
-        public DropRate DropRate { get; set; }
+        public Indicators.DropRate DropRate { get; set; }
+    }
+
+    public class MarketParams
+    {
+        public decimal MinimumDropRate { get; set; }
+        public decimal MinimumVolume { get; set; }
+        public decimal CrashThreshold { get; set; }
+        public decimal FlashPumpThreshold { get; set; }
+        public int DropInterval { get; set; }
+        public double SellProfit { get; set; }
+        public int BuyExpiration { get; set; }
+        public int SellExpiration { get; set; }
     }
 
     public class FlashCrashRunParams : RunParams
     {
-
+        public Dictionary<string, MarketParams> MarketParams { get; set; }
     }
 
-    public class FlashCrash : QCAlgorithm, IRegressionAlgorithmDefinition
+    public class FlashCrashAlgorithm : ValyriaAlgorithm, IRegressionAlgorithmDefinition
     {
-        public RunParams RunParams { get; set; }
+        public FlashCrashRunParams RunParams { get; set; }
 
         public Dictionary<string, Crypto> TradingPairs = new Dictionary<string, Crypto>();
         private Dictionary<string, FlashCrashIndicators> Indicators = new Dictionary<string, FlashCrashIndicators>();
-
-
-        public DropRate DR(Symbol symbol, int period, Resolution? resolution = null,
-                                    Func<IBaseData, decimal> selector = null)
-        {
-            var name = CreateIndicatorName(symbol, "DR" + period, resolution);
-            var dropRate = new DropRate(name, period);
-            RegisterIndicator(symbol, dropRate, ResolveConsolidator(symbol, resolution), selector);
-            return dropRate;
-        }
-
-        public void RegisterIndicator(Symbol symbol, IndicatorBase<TradeBar> indicator, IDataConsolidator consolidator, Func<IBaseData, decimal> selector = null)
-        {
-            // default our selector to the Value property on BaseData
-            selector ??= (x => x.Value);
-
-            // register the consolidator for automatic updates via SubscriptionManager
-            SubscriptionManager.AddConsolidator(symbol, consolidator);
-
-            // attach to the DataConsolidated event so it updates our indicator
-            consolidator.DataConsolidated += (sender, consolidated) =>
-            {
-                var value = selector(consolidated);
-                indicator.Update(new TradeBar(consolidated as TradeBar));
-            };
-        }
 
         /// <summary>
         /// Initialise the data and resolution required, as well as the cash and start-end dates for your algorithm. All algorithms must initialized.
@@ -63,11 +45,15 @@ namespace Valyria.Launcher.Algs
         {
             SetBrokerageModel(BrokerageName.Binance, AccountType.Cash);
 
-            //SetStartDate(RunParams.StartDate);
-            //if (RunParams.EndDate.HasValue)
-            //{
-            //    SetEndDate(RunParams.EndDate.Value);
-            //}
+            if (RunParams.StartDate.HasValue)
+            {
+                SetStartDate(RunParams.StartDate.Value);
+            }
+
+            if (RunParams.EndDate.HasValue)
+            {
+                SetEndDate(RunParams.EndDate.Value);
+            }
 
             foreach (var balance in RunParams.InitialBalance)
             {
@@ -88,8 +74,13 @@ namespace Valyria.Launcher.Algs
             }
         }
 
-        private void ProcessData(TradeBar data)
+        private void ProcessData(TradeBar data, FlashCrashIndicators indicators, MarketParams marketParams)
         {
+            if (indicators.DropRate < marketParams.MinimumDropRate)
+            {
+                return;
+            }
+
             // data..
         }
 
@@ -101,7 +92,11 @@ namespace Valyria.Launcher.Algs
         {
             foreach (var entry in data)
             {
-                ProcessData(entry.Value as TradeBar);
+                var tradeBar = entry.Value as TradeBar;
+                var indicators = Indicators[tradeBar.Symbol.Value];
+                var marketParams = RunParams.MarketParams[tradeBar.Symbol.Value];
+
+                ProcessData(tradeBar, indicators, marketParams);
             }
         }
 
@@ -113,15 +108,6 @@ namespace Valyria.Launcher.Algs
         {
         }
 
-        /// <summary>
-        /// This is used by the regression test system to indicate if the open source Lean repository has the required data to run this algorithm.
-        /// </summary>
-        public bool CanRunLocally { get; } = true;
-
-        /// <summary>
-        /// This is used by the regression test system to indicate which languages this algorithm is written in.
-        /// </summary>
-        public Language[] Languages { get; } = { Language.CSharp, Language.Python };
 
         /// <summary>
         /// This is used by the regression test system to indicate what the expected statistics are from running the algorithm

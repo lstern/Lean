@@ -165,7 +165,6 @@
     <Compile Include="DonchianChannel.cs" />
     <Compile Include="DoubleExponentialMovingAverage.cs" />
     <Compile Include="IntradayVwap.cs" />
-    <Compile Include="DropRate.cs" />
     <Compile Include="WilderMovingAverage.cs" />
     <Compile Include="FractalAdaptiveMovingAverage.cs" />
     <Compile Include="FilteredIdentity.cs" />
